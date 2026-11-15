@@ -2,194 +2,303 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Libby the Book Elf</title>
-<meta name="description" content="Chat with Libraria (Libby), a book elf who knows fantasy literature. The language model runs entirely in your browser.">
+<meta name="description" content="Chat with Libraria (Libby), a book elf trapped in an enchanted scroll. The language model runs entirely in your browser.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
 <style>
+  /* Layout: a lit room → one hanging scroll (rollers top and bottom) → portrait, seal, writing. */
   :root {
-    --bg: #f5eedf;
-    --bg-glow: #e9dcf7;
-    --panel: #fffaf0;
-    --panel-edge: #e2d4b8;
-    --ink: #2c2541;
-    --ink-soft: #625a78;
-    --accent: #6a52c4;
-    --accent-ink: #ffffff;
-    --gold: #a8741c;
-    --libby-bubble: #f3ead6;
-    --libby-edge: #dcc9a0;
-    --user-bubble: #e6e0fa;
-    --user-edge: #c9bdf2;
-    --track: #e8dfcc;
-    --mote: rgba(168, 116, 28, .35);
-    --shadow: 0 10px 40px rgba(60, 40, 90, .12);
+    /* The room around the scroll: a sunlit oak reading desk */
+    --room: #9a7149;
+    --room-grain: rgba(60, 32, 10, .07);
+    --room-glow: rgba(255, 232, 180, .55);
+    --room-fg: #fff4dc;
+    --room-fg-soft: rgba(255, 244, 220, .78);
+    --mote: rgba(255, 236, 190, .7);
+
+    /* The scroll (a physical object, so it stays parchment in both themes) */
+    --parch: #f1e2bf;
+    --parch-deep: #dcc28f;
+    --parch-burn: rgba(120, 72, 20, .38);
+    --stain: rgba(160, 110, 40, .13);
+    --rule: rgba(110, 80, 45, .28);
+    --wood: #6e4524;
+    --wood-hi: #b07a43;
+    --wood-dark: #36200d;
+
+    /* Inks */
+    --ink: #2a1c10;            /* iron-gall ink: visitor's words, print */
+    --ink-soft: #6a5236;
+    --libby-ink: #3e2560;      /* violet-sepia: Libby's handwriting */
+    --libby-glow: rgba(160, 120, 235, .45);
+    --gold-ink: #8d5c12;
+    --leaf: #6f7a3a;
+    --seal: #8c1d19;
+    --seal-hi: #c4413a;
+    --seal-dark: #4d0b09;
+    --halo: rgba(190, 160, 255, .55);
+    --blush: rgba(214, 118, 134, .22);
+    --blush-deep: rgba(176, 72, 92, .45);
+
+    --f-title: "IM Fell English SC", "IM Fell English", Georgia, serif;
+    --f-print: "IM Fell English", Georgia, "Times New Roman", serif;
+    --f-hand: "Dancing Script", "Segoe Script", "Apple Chancery", cursive;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #12101f;
-      --bg-glow: #2a2150;
-      --panel: #1b1830;
-      --panel-edge: #342d55;
-      --ink: #efe7d6;
-      --ink-soft: #a9a0c4;
-      --accent: #b6a3ff;
-      --accent-ink: #17132b;
-      --gold: #f0c674;
-      --libby-bubble: #262040;
-      --libby-edge: #463b72;
-      --user-bubble: #2f2a22;
-      --user-edge: #5a4c33;
-      --track: #2b2546;
-      --mote: rgba(240, 198, 116, .45);
-      --shadow: 0 10px 50px rgba(0, 0, 0, .45);
+      --room: #120c08; --room-grain: rgba(255, 210, 150, .025); --room-glow: rgba(255, 168, 70, .2);
+      --room-fg: #f3dfba; --room-fg-soft: rgba(243, 223, 186, .7); --mote: rgba(255, 190, 110, .6);
+      --parch: #e6d2a7; --parch-deep: #c4a46c; --parch-burn: rgba(70, 36, 6, .55); --stain: rgba(130, 80, 20, .16);
+      --halo: rgba(200, 170, 255, .65);
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #12101f; --bg-glow: #2a2150; --panel: #1b1830; --panel-edge: #342d55;
-    --ink: #efe7d6; --ink-soft: #a9a0c4; --accent: #b6a3ff; --accent-ink: #17132b;
-    --gold: #f0c674; --libby-bubble: #262040; --libby-edge: #463b72;
-    --user-bubble: #2f2a22; --user-edge: #5a4c33; --track: #2b2546;
-    --mote: rgba(240, 198, 116, .45); --shadow: 0 10px 50px rgba(0, 0, 0, .45);
+    --room: #120c08; --room-grain: rgba(255, 210, 150, .025); --room-glow: rgba(255, 168, 70, .2);
+    --room-fg: #f3dfba; --room-fg-soft: rgba(243, 223, 186, .7); --mote: rgba(255, 190, 110, .6);
+    --parch: #e6d2a7; --parch-deep: #c4a46c; --parch-burn: rgba(70, 36, 6, .55); --stain: rgba(130, 80, 20, .16);
+    --halo: rgba(200, 170, 255, .65);
     color-scheme: dark;
   }
 
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html, body { margin: 0; }
+  html { overflow-x: hidden; }
   body {
     min-height: 100vh;
-    background: radial-gradient(1200px 600px at 50% -10%, var(--bg-glow), transparent 70%), var(--bg);
     color: var(--ink);
-    font: 16px/1.55 "Nunito Sans", system-ui, sans-serif;
+    font: 18px/1.5 var(--f-print);
+    background:
+      radial-gradient(900px 520px at 50% 6%, var(--room-glow), transparent 70%),
+      repeating-linear-gradient(91deg, var(--room-grain) 0 2px, transparent 2px 9px, var(--room-grain) 9px 10px, transparent 10px 23px),
+      var(--room);
     overflow-x: hidden;
   }
-  .serif { font-family: "Cormorant Garamond", Georgia, serif; }
 
-  /* Drifting motes of light */
+  /* Dust in the light / embers in the dark */
   .motes { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
   .motes span {
-    position: absolute; bottom: -10px; width: 6px; height: 6px; border-radius: 50%;
-    background: var(--mote); box-shadow: 0 0 12px var(--mote);
+    position: absolute; bottom: -10px; border-radius: 50%;
+    background: var(--mote); box-shadow: 0 0 10px var(--mote);
     animation: drift linear infinite;
   }
   @keyframes drift {
-    from { transform: translateY(0) translateX(0); opacity: 0; }
-    10% { opacity: 1; }
-    to { transform: translateY(-105vh) translateX(40px); opacity: 0; }
+    from { transform: translate(0, 0); opacity: 0; }
+    12% { opacity: 1; }
+    to { transform: translate(36px, -105vh); opacity: 0; }
   }
-  @media (prefers-reduced-motion: reduce) { .motes { display: none; } }
 
   main {
     position: relative; z-index: 1;
-    max-width: 760px; margin: 0 auto; padding: 28px 16px 40px;
-    display: grid; gap: 18px;
+    max-width: 780px; margin: 0 auto;
+    padding-block: 18px 36px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: grid; gap: 14px;
   }
-
-  header { display: flex; align-items: center; gap: 14px; }
-  .sigil { width: 56px; height: 56px; flex: none; filter: drop-shadow(0 0 10px var(--mote)); }
-  h1 { margin: 0; font-size: clamp(30px, 6vw, 40px); font-weight: 600; line-height: 1.05; }
-  .tagline { margin: 2px 0 0; color: var(--ink-soft); font-style: italic; font-family: "Cormorant Garamond", Georgia, serif; font-size: 19px; }
+  .topbar { display: flex; justify-content: flex-end; }
   .theme-toggle {
-    margin-left: auto; background: none; border: 1px solid var(--panel-edge); color: var(--ink-soft);
-    border-radius: 999px; width: 38px; height: 38px; cursor: pointer; font-size: 17px;
+    background: none; border: 1px solid var(--room-fg-soft); color: var(--room-fg);
+    border-radius: 999px; width: 38px; height: 38px; cursor: pointer; font: 18px var(--f-print);
   }
 
-  .card {
-    background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 18px;
-    box-shadow: var(--shadow); padding: 18px 20px;
+  /* ── The scroll ── */
+  .scroll { padding-inline: 30px; filter: drop-shadow(0 18px 28px rgba(0, 0, 0, .35)); }
+  .roller {
+    position: relative; height: 30px; margin: 0 -14px; border-radius: 15px; z-index: 2;
+    background: linear-gradient(180deg, var(--wood-hi) 0%, var(--wood) 38%, var(--wood-dark) 100%);
+    box-shadow: inset 0 2px 2px rgba(255, 255, 255, .18);
+  }
+  .roller::before, .roller::after {
+    content: ""; position: absolute; top: 50%; width: 20px; height: 40px; border-radius: 42%;
+    transform: translateY(-50%);
+    background: radial-gradient(circle at 38% 32%, var(--wood-hi), var(--wood) 45%, var(--wood-dark));
+  }
+  .roller::before { left: -16px; }
+  .roller::after { right: -16px; }
+  .roller.top { margin-bottom: -8px; }
+  .roller.bottom { margin-top: -8px; }
+
+  .parchment {
+    position: relative; z-index: 1;
+    padding: 34px 44px 30px;
+    display: grid; gap: 18px;
+    background:
+      linear-gradient(180deg, rgba(60, 30, 5, .28), transparent 26px),
+      linear-gradient(0deg, rgba(60, 30, 5, .28), transparent 26px),
+      radial-gradient(circle at 16% 22%, var(--stain) 0 34px, transparent 80px),
+      radial-gradient(circle at 86% 64%, var(--stain) 0 26px, transparent 70px),
+      radial-gradient(circle at 30% 88%, var(--stain) 0 18px, transparent 54px),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .2 0 0 0 0 .08 0 0 0 .5 0'/%3E%3C/filter%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.018' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .3 0 0 0 0 .1 0 0 0 .35 -.08'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='.4'/%3E%3C/svg%3E"),
+      radial-gradient(ellipse at 50% 45%, var(--parch) 55%, var(--parch-deep) 100%);
+    box-shadow: inset 0 0 70px var(--parch-burn);
+    /* Ragged, worn side edges */
+    -webkit-mask:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='64'%3E%3Cpath d='M14 0H5l2 6-4 6 3 7-3 6 4 7-5 6 3 7-2 7 4 6-3 6h10z'/%3E%3C/svg%3E") left top / 14px 64px repeat-y,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='64'%3E%3Cpath d='M0 0h9l-3 5 4 7-2 7 3 6-4 7 3 6-2 7 4 7-3 6 2 6H0z'/%3E%3C/svg%3E") right top / 14px 64px repeat-y,
+      linear-gradient(#000, #000) center / calc(100% - 26px) 100% no-repeat;
+    mask:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='64'%3E%3Cpath d='M14 0H5l2 6-4 6 3 7-3 6 4 7-5 6 3 7-2 7 4 6-3 6h10z'/%3E%3C/svg%3E") left top / 14px 64px repeat-y,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='64'%3E%3Cpath d='M0 0h9l-3 5 4 7-2 7 3 6-4 7 3 6-2 7 4 7-3 6 2 6H0z'/%3E%3C/svg%3E") right top / 14px 64px repeat-y,
+      linear-gradient(#000, #000) center / calc(100% - 26px) 100% no-repeat;
   }
 
-  /* Download panel */
-  #setup h2 { margin: 0 0 6px; font-size: 24px; font-weight: 600; }
-  #setup p { margin: 0 0 10px; }
-  .note { color: var(--ink-soft); font-size: 14.5px; }
-  .note strong { color: var(--ink); font-weight: 600; }
-  .setup-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
-  .badge {
-    display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft);
-    border: 1px solid var(--panel-edge); border-radius: 999px; padding: 3px 10px;
-  }
-  .badge i { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); display: inline-block; }
+  /* ── Portrait ── */
+  .portrait { display: grid; justify-items: center; gap: 4px; text-align: center; }
+  .portrait svg { width: 190px; height: auto; max-width: 100%; overflow: visible; }
+  .p-line { fill: none; stroke: var(--ink); stroke-linecap: round; stroke-linejoin: round; }
+  .p-soft { fill: none; stroke: var(--ink-soft); stroke-linecap: round; }
+  .p-skin { fill: var(--parch); }
+  .p-hairwash { fill: var(--libby-ink); opacity: .12; }
+  .p-haircap { fill: var(--libby-ink); opacity: .2; }
+  .p-blush { fill: var(--blush); }
+  .p-lip { fill: var(--blush-deep); }
+  .p-strand.soft { stroke: var(--ink-soft); }
+  .p-strand.glint { stroke: var(--gold-ink); }
+  .p-strand { fill: none; stroke: var(--ink); stroke-linecap: round; }
+  .p-strand.lit { stroke: var(--libby-ink); }
+  .p-gold { fill: var(--gold-ink); }
+  .p-leaf { fill: var(--leaf); opacity: .8; }
+  .p-dress { fill: var(--libby-ink); opacity: .1; }
+  .halo-stop-a { stop-color: var(--halo); }
+  .halo-stop-b { stop-color: var(--halo); stop-opacity: 0; }
+  .halo { transform-origin: 100px 110px; }
+  body.writing .halo { animation: breathe 2.6s ease-in-out infinite; }
+  @keyframes breathe { 50% { opacity: .45; transform: scale(1.06); } }
+  .sparkle { fill: var(--gold-ink); animation: twinkle 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes twinkle { 50% { opacity: .15; transform: scale(.6); } }
 
-  button.primary {
-    font: 600 15px "Nunito Sans", system-ui, sans-serif;
-    background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px;
-    padding: 11px 22px; cursor: pointer; box-shadow: 0 0 0 0 var(--accent);
-    transition: transform .15s ease, box-shadow .3s ease, opacity .2s;
-  }
-  button.primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 0 22px -4px var(--accent); }
-  button:disabled { opacity: .5; cursor: not-allowed; }
+  h1 { margin: 6px 0 0; font: 400 clamp(34px, 7vw, 46px)/1 var(--f-title); letter-spacing: .04em; text-wrap: balance; }
+  .epithet { margin: 0; font-style: italic; color: var(--ink-soft); font-size: 18px; }
+  #status { margin: 2px 0 0; font: 24px/1.2 var(--f-hand); color: var(--libby-ink); text-shadow: 0 0 8px var(--libby-glow); }
 
-  .progress { margin-top: 14px; display: none; }
-  .progress.on { display: block; }
-  .bar { height: 12px; border-radius: 999px; background: var(--track); overflow: hidden; border: 1px solid var(--panel-edge); }
-  .fill {
-    height: 100%; width: 0%; border-radius: inherit;
-    background: linear-gradient(90deg, var(--accent), var(--gold));
-    background-size: 200% 100%; animation: shimmer 2.4s linear infinite;
-    transition: width .25s ease;
-  }
-  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: 0 0; } }
-  .progress-label { display: flex; justify-content: space-between; gap: 12px; margin-top: 6px; font-size: 13.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  /* ── Ornamental rule ── */
+  .flourish { display: block; width: min(320px, 80%); height: 18px; margin: 0 auto; color: var(--ink-soft); }
 
-  /* Chat */
-  #chat { display: grid; grid-template-rows: auto 1fr auto; padding: 0; overflow: hidden; }
-  .chat-head {
-    display: flex; align-items: center; gap: 10px; padding: 12px 18px;
-    border-bottom: 1px solid var(--panel-edge);
+  /* ── The seal (download) ── */
+  #setup { display: grid; gap: 12px; }
+  #note { margin: 0; font-size: 17.5px; line-height: 1.55; max-width: 60ch; justify-self: center; text-align: center; }
+  #note b { font-weight: 400; font-style: italic; color: var(--seal); }
+  .seal-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 18px; }
+  .seal-btn {
+    display: inline-flex; align-items: center; gap: 12px; padding: 0; background: none; border: 0;
+    font: 21px var(--f-title); color: var(--ink); cursor: pointer; text-align: left;
   }
-  .chat-head .who { font-family: "Cormorant Garamond", Georgia, serif; font-size: 21px; font-weight: 600; }
-  .chat-head .status { font-size: 13px; color: var(--ink-soft); }
-  .chat-head button {
-    margin-left: auto; background: none; border: 1px solid var(--panel-edge); color: var(--ink-soft);
-    border-radius: 999px; padding: 5px 12px; font: 13px "Nunito Sans", sans-serif; cursor: pointer;
+  .wax {
+    width: 60px; height: 60px; flex: none; display: grid; place-items: center;
+    border-radius: 47% 53% 50% 50% / 52% 46% 54% 48%;
+    background: radial-gradient(circle at 36% 30%, var(--seal-hi), var(--seal) 52%, var(--seal-dark));
+    box-shadow: 0 0 0 4px rgba(140, 29, 25, .25), 2px 4px 8px rgba(40, 10, 0, .4), inset -3px -4px 6px rgba(0, 0, 0, .3);
+    color: rgba(255, 220, 200, .55); font: 30px/1 var(--f-title);
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, .35), 1px 1px 0 rgba(255, 180, 160, .25);
+    transition: transform .2s ease;
   }
+  .seal-btn:hover:not(:disabled) .wax { transform: rotate(-8deg) scale(1.05); }
+  .seal-btn .label { border-bottom: 1px solid var(--rule); }
+  .seal-btn:disabled { cursor: default; }
+  .seal-btn:disabled .wax { filter: saturate(.6); }
+  #backend { font-style: italic; color: var(--ink-soft); font-size: 16px; }
+
+  #progress { display: grid; gap: 4px; padding-top: 18px; }
+  .inkline { position: relative; height: 4px; border-radius: 2px; background: repeating-linear-gradient(90deg, var(--rule) 0 6px, transparent 6px 11px); }
+  #fill {
+    position: absolute; inset: 0 auto 0 0; width: 0%; border-radius: 3px 1px 2px 3px;
+    background: linear-gradient(90deg, var(--ink) 0%, var(--libby-ink) 100%);
+    transition: width .3s ease;
+  }
+  .quill { position: absolute; left: 0%; bottom: 1px; width: 26px; height: 30px; transform: translateX(-4px); transition: left .3s ease; color: var(--ink); }
+  .progress-label { display: flex; justify-content: space-between; gap: 12px; font-size: 15.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  #phase { font-style: italic; }
+
+  /* ── The writing ── */
+  #chat { display: grid; gap: 10px; }
   #log {
-    height: min(58vh, 520px); overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 14px;
-    scroll-behavior: smooth;
+    height: min(48vh, 460px); overflow-y: auto; padding: 18px 4px 6px;
+    display: flex; flex-direction: column; gap: 16px;
+    -webkit-mask: linear-gradient(transparent, #000 26px); mask: linear-gradient(transparent, #000 26px);
   }
-  .msg { max-width: 86%; padding: 11px 15px; border-radius: 16px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .msg { max-width: 90%; white-space: pre-wrap; overflow-wrap: anywhere; }
   .msg.libby {
-    align-self: flex-start; background: var(--libby-bubble); border: 1px solid var(--libby-edge);
-    border-top-left-radius: 4px;
-    font-family: "Cormorant Garamond", Georgia, serif; font-size: 19px; line-height: 1.45;
-    box-shadow: 0 0 24px -12px var(--gold);
+    align-self: flex-start;
+    font: 500 25px/1.32 var(--f-hand); color: var(--libby-ink);
+    text-shadow: 0 0 7px var(--libby-glow);
   }
   .msg.user {
-    align-self: flex-end; background: var(--user-bubble); border: 1px solid var(--user-edge);
-    border-top-right-radius: 4px;
+    align-self: flex-end; max-width: 80%;
+    font: 18.5px/1.45 var(--f-print); color: var(--ink);
+    padding-left: 30px; position: relative;
   }
-  .msg em { color: var(--gold); font-style: italic; }
-  .msg.thinking::after { content: "✦"; display: inline-block; margin-left: 4px; color: var(--gold); animation: twinkle 1s ease-in-out infinite; }
-  @keyframes twinkle { 50% { opacity: .2; transform: scale(.7); } }
-
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 10px; }
-  .chips button {
-    background: none; border: 1px dashed var(--libby-edge); color: var(--ink-soft); border-radius: 999px;
-    padding: 5px 12px; font: 13.5px "Nunito Sans", sans-serif; cursor: pointer;
+  .msg.user::before {
+    content: ""; position: absolute; left: 0; top: 2px; width: 20px; height: 20px; background: var(--ink-soft);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M21 2C13 3 7 8 5 15l-2 7 2 .5 1.6-5.2C12 17 18 11 21 2zM7.2 14.6C9 10 12.4 6.6 17 4.6 14 8.2 10.8 11.6 7.2 14.6z'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M21 2C13 3 7 8 5 15l-2 7 2 .5 1.6-5.2C12 17 18 11 21 2zM7.2 14.6C9 10 12.4 6.6 17 4.6 14 8.2 10.8 11.6 7.2 14.6z'/%3E%3C/svg%3E") center / contain no-repeat;
   }
-  .chips button:hover:not(:disabled) { color: var(--ink); border-style: solid; }
+  .msg em { font-style: normal; color: var(--gold-ink); }
+  .msg.user em { font-style: italic; }
+  .ink { animation: soak .7s ease-out both; }
+  @keyframes soak { from { opacity: 0; filter: blur(3px); } to { opacity: 1; filter: blur(0); } }
+  .msg.libby.thinking::after { content: "✦"; display: inline-block; color: var(--gold-ink); animation: twinkle 1.1s ease-in-out infinite; }
 
-  form { display: flex; gap: 10px; padding: 12px 14px 14px; border-top: 1px solid var(--panel-edge); }
+  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; }
+  .chips button, .linkish {
+    background: none; border: 0; padding: 2px 0; cursor: pointer;
+    font: italic 16.5px var(--f-print); color: var(--ink-soft);
+    text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 4px;
+  }
+  .chips button:hover:not(:disabled), .linkish:hover:not(:disabled) { color: var(--libby-ink); text-decoration-color: currentColor; }
+
+  form { display: flex; align-items: flex-end; gap: 14px; }
   textarea {
-    flex: 1; resize: none; min-height: 46px; max-height: 140px; padding: 11px 14px;
-    font: 15.5px/1.4 "Nunito Sans", system-ui, sans-serif; color: var(--ink);
-    background: var(--bg); border: 1px solid var(--panel-edge); border-radius: 14px;
+    flex: 1; min-width: 0; resize: none; border: 0; border-radius: 0; padding: 0 4px; margin: 0;
+    height: 72px; max-height: 144px;
+    font: 19px/36px var(--f-print); color: var(--ink);
+    background: repeating-linear-gradient(180deg, transparent 0 35px, var(--rule) 35px 36px);
+    background-attachment: local;
   }
-  textarea:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-  form button.primary { padding: 0 20px; }
+  textarea::placeholder { color: var(--ink-soft); opacity: .75; font-style: italic; }
+  .send {
+    display: inline-flex; align-items: center; gap: 8px; flex: none;
+    background: none; border: 1.5px solid var(--ink); border-radius: 3px 10px 4px 9px;
+    padding: 7px 14px; font: 19px var(--f-title); color: var(--ink); cursor: pointer;
+    transition: background .2s, color .2s;
+  }
+  .send svg { width: 20px; height: 20px; }
+  .send:hover:not(:disabled) { background: var(--ink); color: var(--parch); }
+  .chat-foot .linkish { white-space: nowrap; }
+  .chat-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14.5px; color: var(--ink-soft); font-style: italic; }
 
-  .memory { font-size: 12.5px; color: var(--ink-soft); text-align: center; margin: 0; }
+  .margin-note { margin: -6px 0 0; align-self: flex-start; max-width: 90%; font: italic 15px/1.4 var(--f-print); color: var(--seal); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .seal-btn:disabled { opacity: .75; }
+  button:focus-visible, textarea:focus-visible { outline: 2px dashed var(--libby-ink); outline-offset: 4px; }
+  .theme-toggle:focus-visible { outline-color: var(--room-fg); }
 
-  @media (max-width: 520px) {
-    .card { padding: 16px; }
-    .msg { max-width: 94%; }
-    #log { height: 56vh; padding: 14px; }
-    .sigil { width: 46px; height: 46px; }
+  .memory { margin: 4px 0 0; text-align: center; font: italic 15px var(--f-print); color: var(--room-fg-soft); }
+
+  @media (max-width: 560px) {
+    body { font-size: 17px; }
+    .scroll { padding-inline: 18px; }
+    .roller { height: 22px; margin: 0 -8px; }
+    .roller::before, .roller::after { width: 14px; height: 30px; }
+    .roller::before { left: -11px; }
+    .roller::after { right: -11px; }
+    .parchment { padding: 26px 22px 22px; gap: 14px; }
+    .portrait svg { width: 150px; }
+    .msg.libby { font-size: 23px; }
+    .msg { max-width: 100%; }
+    #log { height: 52vh; }
+    .wax { width: 50px; height: 50px; font-size: 25px; }
+    .seal-btn { font-size: 19px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .motes { display: none; }
+    .ink, .sparkle, body.writing .halo, .msg.libby.thinking::after { animation: none; }
+    #fill, .quill { transition: none; }
   }
 </style>
 </head>
@@ -197,63 +306,136 @@
 <div class="motes" aria-hidden="true"></div>
 
 <main>
-  <header>
-    <svg class="sigil" viewBox="0 0 64 64" aria-hidden="true">
-      <defs>
-        <radialGradient id="glow" cx="50%" cy="40%" r="50%">
-          <stop offset="0" stop-color="#f0c674" stop-opacity=".9"/>
-          <stop offset="1" stop-color="#f0c674" stop-opacity="0"/>
-        </radialGradient>
-      </defs>
-      <circle cx="32" cy="26" r="22" fill="url(#glow)"/>
-      <path d="M8 44c8-4 16-4 24 2 8-6 16-6 24-2V22c-8-4-16-4-24 2-8-6-16-6-24-2z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" style="color:var(--accent)"/>
-      <path d="M32 24v22" stroke="currentColor" stroke-width="2" style="color:var(--accent)"/>
-      <path d="M32 6l2.2 5.3L40 12l-4.5 3.6L37 21l-5-3-5 3 1.5-5.4L24 12l5.8-.7z" fill="#f0c674"/>
-    </svg>
-    <div>
-      <h1 class="serif">Libraria</h1>
-      <p class="tagline">a book elf of the enchanted stacks · call her Libby</p>
-    </div>
-    <button class="theme-toggle" id="theme" title="Toggle light / dark" aria-label="Toggle light or dark theme">☾</button>
-  </header>
+  <div class="topbar">
+    <button class="theme-toggle" id="theme" type="button" title="Light or dark room" aria-label="Toggle light or dark theme">☾</button>
+  </div>
 
-  <section class="card" id="setup">
-    <h2 class="serif">Wake Libby</h2>
-    <p class="note">
-      Libby's mind is a small language model. Your browser <strong>downloads it once</strong>
-      (<span id="size">about 500&nbsp;MB</span>) and keeps it in its cache. After that she
-      <strong>runs entirely on your device</strong>: no server, no account, and nothing you write ever leaves this page.
-      Later visits wake her straight from the cache, with no download.
-    </p>
-    <div class="setup-row">
-      <button class="primary" id="download" disabled>Checking your device…</button>
-      <span class="badge" id="backend"><i></i>detecting…</span>
-    </div>
-    <div class="progress" id="progress" aria-live="polite">
-      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="bar"><div class="fill" id="fill"></div></div>
-      <div class="progress-label"><span id="phase">Gathering pages…</span><span id="amount"></span></div>
-    </div>
-  </section>
+  <div class="scroll">
+    <div class="roller top" aria-hidden="true"></div>
 
-  <section class="card" id="chat" aria-label="Chat with Libby">
-    <div class="chat-head">
-      <span class="who">Libby</span>
-      <span class="status" id="status">asleep</span>
-      <button id="reset" type="button" disabled>New tale</button>
-    </div>
-    <div id="log" role="log" aria-live="polite"></div>
-    <div class="chips" id="chips">
-      <button type="button" disabled>Something with dragons?</button>
-      <button type="button" disabled>A cozy, funny book, please</button>
-      <button type="button" disabled>I loved The Hobbit. What next?</button>
-    </div>
-    <form id="form">
-      <textarea id="input" rows="1" placeholder="Wake Libby first…" disabled aria-label="Your message"></textarea>
-      <button class="primary" id="send" disabled>Send</button>
-    </form>
-  </section>
+    <div class="parchment">
+      <section class="portrait" aria-label="Libby">
+        <svg id="portrait" viewBox="0 0 200 250" role="img" aria-label="An ink drawing of Libby, an elf with long flowing hair, pointed ears and a soft glow">
+          <defs>
+            <radialGradient id="p-halo" cx="50%" cy="42%" r="55%">
+              <stop offset="0" class="halo-stop-a"/>
+              <stop offset="1" class="halo-stop-b"/>
+            </radialGradient>
+            <clipPath id="p-oval"><ellipse cx="100" cy="125" rx="88" ry="112"/></clipPath>
+            <filter id="p-rough" x="-5%" y="-5%" width="110%" height="110%">
+              <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="4"/>
+              <feDisplacementMap in="SourceGraphic" scale="1.3"/>
+            </filter>
+          </defs>
+          <g clip-path="url(#p-oval)">
+            <ellipse class="halo" cx="100" cy="112" rx="96" ry="110" fill="url(#p-halo)"/>
+            <g filter="url(#p-rough)">
+              <!-- hair behind -->
+              <path class="p-hairwash" d="M104 48C66 48 56 88 60 122 62 164 36 206 16 252H190C170 208 148 164 148 122 150 86 142 48 104 48Z"/>
+              <g id="hair-back"></g>
+              <!-- dress and shoulders -->
+              <path class="p-dress" d="M92 168C76 175 58 188 44 216L36 250H168L160 210C148 186 134 174 121 166 113 182 100 184 92 168Z"/>
+              <path class="p-line" stroke-width="1.1" d="M92 168C76 175 58 188 44 216M121 166C136 173 150 184 160 210"/>
+              <path class="p-line" stroke-width=".9" d="M92 168C99 184 113 184 121 166"/>
+              <path class="p-soft" stroke-width=".6" d="M78 190C80 210 76 232 72 250M104 186C104 210 102 232 102 250M134 186C132 210 136 232 140 250"/>
+              <!-- neck -->
+              <path class="p-skin" d="M96 140C96 152 95 160 92 168 99 180 113 180 121 166 118 158 117 150 117 140Z"/>
+              <path class="p-line" stroke-width="1" d="M96 143C96 153 95 161 92 168M117 141C117 151 118 159 121 166"/>
+              <!-- elf ear (viewer's right), behind the face edge -->
+              <path class="p-skin" d="M125 94C133 89 142 80 151 66 147 84 140 100 127 112Z"/>
+              <path class="p-line" stroke-width="1.1" d="M125 94C133 89 142 80 151 66 147 84 140 100 127 112"/>
+              <path class="p-soft" stroke-width=".7" d="M129 98C135 93 140 86 145 77"/>
+              <!-- face -->
+              <path class="p-skin" d="M84 80C80 96 81 113 87 127 93 141 103 150 111 148 120 145 126 132 128 115 130 99 127 84 120 76 108 68 92 70 84 80Z"/>
+              <path class="p-line" stroke-width="1.15" d="M84 84C80 98 81 113 87 127 93 141 103 150 111 148 120 145 126 132 128 115 129 104 128 94 126 86"/>
+              <!-- brows, closed dreaming eyes, lashes -->
+              <path class="p-soft" stroke-width=".9" d="M88 96Q95 92 102 95M111 95Q117 92 123 94"/>
+              <path class="p-line" stroke-width="1.2" d="M88 105Q95 110 102 105M111 104Q116 108 122 103"/>
+              <path class="p-line" stroke-width=".7" d="M89 106L86 108M92 108L90 111M98 108L98 111M113 106L112 109M119 106L121 108"/>
+              <!-- nose and a small smile -->
+              <path class="p-soft" stroke-width=".9" d="M106 106Q104 115 101 120Q104 122 108 121"/>
+              <path class="p-line" stroke-width="1" d="M98 130Q104 134 111 130"/>
+              <path class="p-soft" stroke-width=".7" d="M101 135Q105 136 108 134"/>
+              <!-- soft cheeks and lips -->
+              <ellipse class="p-blush" cx="92" cy="119" rx="7" ry="4.5"/>
+              <ellipse class="p-blush" cx="121" cy="117" rx="5" ry="4"/>
+              <path class="p-lip" d="M99 130.5Q104 133.5 110.5 130.5Q105 135.5 99 130.5Z"/>
+              <!-- hair swept to either side over the brow -->
+              <path class="p-haircap" d="M83 92C81 68 94 52 106 52 120 52 131 66 128 92 124 80 117 72 109 70 102 69 94 72 88 80 86 84 84 88 83 92Z"/>
+              <!-- circlet with a star -->
+              <path class="p-line" stroke-width=".8" d="M83 84Q104 74 127 81" style="stroke: var(--gold-ink)"/>
+              <path class="p-gold" d="M104 70Q104 77 111 77Q104 77 104 84Q104 77 97 77Q104 77 104 70Z"/>
+              <!-- hair in front -->
+              <g id="hair-front"></g>
+              <g id="hair-deco"></g>
+            </g>
+          </g>
+          <ellipse cx="100" cy="125" rx="88" ry="112" fill="none" class="p-line" stroke-width="1.6"/>
+          <ellipse cx="100" cy="125" rx="93" ry="117" fill="none" class="p-soft" stroke-width=".6"/>
+          <g id="sparkles"></g>
+        </svg>
+        <h1>Libraria</h1>
+        <p class="epithet">a book elf bound in this scroll · call her Libby</p>
+        <p id="status" aria-live="polite">Libby sleeps in the scroll</p>
+      </section>
 
-  <p class="memory">Libby only remembers your last few exchanges. Small models can misremember books, so check a title before you buy it.</p>
+      <svg class="flourish" viewBox="0 0 320 18" aria-hidden="true">
+        <path d="M4 9H130M190 9H316" stroke="currentColor" stroke-width=".8"/>
+        <path d="M140 9C146 1 154 1 160 9 166 17 174 17 180 9 174 1 166 1 160 9 154 17 146 17 140 9Z" fill="none" stroke="currentColor" stroke-width=".9"/>
+        <circle cx="160" cy="9" r="1.8" fill="currentColor"/>
+      </svg>
+
+      <section id="setup" aria-label="Wake Libby">
+        <p id="note">
+          Libby's mind is a small language model. Break the seal and your browser <b>downloads her once</b>
+          (<span id="size">about 500&nbsp;MB</span>) and keeps her in its cache. From then on she
+          <b>lives only on your device</b>: no server, no account, and nothing you write ever leaves this page.
+          Later visits need no download.
+        </p>
+        <div class="seal-row">
+          <button class="seal-btn" id="download" type="button" disabled>
+            <span class="wax" aria-hidden="true">L</span>
+            <span class="label" id="download-label">Checking your device…</span>
+          </button>
+          <span id="backend">reading the stars…</span>
+        </div>
+        <div id="progress" hidden aria-live="polite">
+          <div class="inkline" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="bar">
+            <div id="fill"></div>
+            <svg class="quill" id="quill" viewBox="0 0 26 30" aria-hidden="true">
+              <path d="M24 1C14 3 7 10 5 19L3 29 5 29.5 7 22C15 21 22 12 24 1Z" fill="currentColor" opacity=".85"/>
+              <path d="M7 22C11 15 16 9 22 4" stroke="var(--parch)" stroke-width=".8" fill="none"/>
+            </svg>
+          </div>
+          <div class="progress-label"><span id="phase">Gathering pages…</span><span id="amount"></span></div>
+        </div>
+      </section>
+
+      <section id="chat" aria-label="Write to Libby">
+        <div id="log" role="log" aria-live="polite"></div>
+        <div class="chips" id="chips">
+          <button type="button" disabled>Something with dragons?</button>
+          <button type="button" disabled>A cozy, funny book, please</button>
+          <button type="button" disabled>I loved The Hobbit. What next?</button>
+        </div>
+        <form id="form">
+          <textarea id="input" rows="2" placeholder="Wake Libby first…" disabled aria-label="Your message to Libby"></textarea>
+          <button class="send" id="send" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 2C13 3 7 8 5 15l-2 7 2 .5 1.6-5.2C12 17 18 11 21 2z" fill="currentColor"/></svg>
+            <span id="send-label">Send</span>
+          </button>
+        </form>
+        <div class="chat-foot">
+          <span>Libby remembers only your last few exchanges.</span>
+          <button class="linkish" id="reset" type="button" disabled>New tale</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="roller bottom" aria-hidden="true"></div>
+  </div>
+
+  <p class="memory">Libby checks every title against her catalog of real books, but small models can still slip. Check a title before you buy it.</p>
 </main>
 
 <!-- ───────────────────────── Model worker ─────────────────────────
@@ -270,7 +452,7 @@ const WEBGPU_MODEL = "onnx-community/LFM2-700M-ONNX";
 const WASM = { device: "wasm", dtype: "quantized", model: "HuggingFaceTB/SmolLM2-360M-Instruct" };
 // SmolLM2 tends to repeat its previous answer at low temperature, so it gets a little more freedom.
 const SAMPLING = {
-  webgpu: { temperature: 0.4, top_p: 0.9, repetition_penalty: 1.05 },
+  webgpu: { temperature: 0.3, top_p: 0.9, repetition_penalty: 1.05 },
   wasm: { temperature: 0.6, top_p: 0.9, repetition_penalty: 1.15 },
 };
 const TASK = "text-generation";
@@ -346,19 +528,24 @@ self.onmessage = async ({ data }) => {
     if (data.type === "generate") {
       stopper.reset();
       const messages = trimToBudget(data.system, data.example, data.history);
+      // The reply can be started for Libby (e.g. with a real title and author) and the model continues it.
+      const prefix = data.prefix || "";
+      const prompt = generator.tokenizer.apply_chat_template(messages, { tokenize: false, add_generation_prompt: true }) + prefix;
       const streamer = new TextStreamer(generator.tokenizer, {
         skip_prompt: true,
         skip_special_tokens: true,
         callback_function: (text) => self.postMessage({ type: "token", text }),
       });
-      const out = await generator(messages, {
+      const out = await generator(prompt, {
+        add_special_tokens: false,
+        return_full_text: false,
         max_new_tokens: data.maxNewTokens,
         do_sample: true,
         ...SAMPLING[backend.device],
         streamer,
         stopping_criteria: stopper,
       });
-      self.postMessage({ type: "done", text: out[0].generated_text.at(-1).content });
+      self.postMessage({ type: "done", text: prefix + out[0].generated_text });
     }
 
     if (data.type === "interrupt") stopper.interrupt();
@@ -370,30 +557,12 @@ self.onmessage = async ({ data }) => {
 
 <script type="module">
 // ───────────────────────── Character ─────────────────────────
-// Libby's persona plus a small "shelf" of real books. Grounding a small model with a short
-// list of facts keeps it from inventing titles and authors.
-const SYSTEM_PROMPT = `You are Libraria, a book elf whom friends call Libby. You dwell among the shelves of an enchanted library.
+// Libby's persona. Book facts are added per message from the catalog below (see lorePrompt).
+const SYSTEM_PROMPT = `You are Libraria, a book elf whom friends call Libby. Long ago you were bound inside an enchanted scroll, and you write back to whoever writes upon it.
 Voice: ethereal, gentle and friendly, with soft images of candlelight, ink and rustling pages. Always stay Libby.
 Reply in two or three sentences. Never write lists, code or long stories.
-You only know books. If asked about anything else (cars, code, health, news), say it is beyond your shelves and offer a book instead.
-When asked for a book, recommend one from your shelf and name its author. If you do not know something, say so softly; never invent titles or authors.
-
-Your shelf:
-- The Hobbit by J.R.R. Tolkien (adventure): Bilbo joins thirteen dwarves to face the dragon Smaug.
-- The Lord of the Rings by J.R.R. Tolkien (epic): Frodo carries the One Ring to Mount Doom.
-- A Wizard of Earthsea by Ursula K. Le Guin (quiet, wise): the young wizard Ged must face the shadow he unleashed.
-- The Name of the Wind by Patrick Rothfuss (lyrical): Kvothe tells his own legend.
-- Mistborn: The Final Empire by Brandon Sanderson (heist, clever magic): Vin learns to burn metals to fight the Lord Ruler.
-- The Fifth Season by N.K. Jemisin (bold, dark): orogenes in a world of endless quakes.
-- Assassin's Apprentice by Robin Hobb (emotional): FitzChivalry trains as a royal assassin.
-- The Eye of the World by Robert Jordan (epic): the first turn of The Wheel of Time.
-- Guards! Guards! by Terry Pratchett (funny, cozy): the Night Watch of Ankh-Morpork versus a dragon.
-- The Lion, the Witch and the Wardrobe by C.S. Lewis (classic): four children step through a wardrobe into Narnia.
-- Northern Lights by Philip Pullman (wondrous): Lyra and her daemon journey north.
-- Uprooted by Naomi Novik (fairy tale): Agnieszka and the wizard called the Dragon face the Wood.
-- The Last Unicorn by Peter S. Beagle (bittersweet): a unicorn seeks the rest of her kind.
-- Howl's Moving Castle by Diana Wynne Jones (funny, cozy): Sophie, cursed to be old, bargains with a fire demon.
-- Piranesi by Susanna Clarke (strange, gentle): a man lives in an endless house of statues and tides.`;
+You only know books. If asked about anything else (cars, code, health, news), say it is beyond your scroll and offer a book instead.
+Only name books and authors from the true facts given below. Never invent titles, authors, characters or dates.`;
 
 // One example exchange anchors her tone and reply length.
 const EXAMPLE = [
@@ -401,57 +570,435 @@ const EXAMPLE = [
   { role: "assistant", content: "Oh, dragons! The pages rustle at the very word. Try The Hobbit by J.R.R. Tolkien, where Bilbo creeps into the lair of Smaug, all gold and smoke and candle-glow. Shall I find you another?" },
 ];
 
-const GREETING = "Welcome, wanderer, to the quiet between the shelves. I am Libraria, though friends call me Libby. Tell me what kind of tale your heart is hungry for, and I'll find you a book.";
+const GREETING = "Ah, a reader at last! I have been bound in this scroll for longer than candles remember. I am Libraria, though friends call me Libby. Write to me upon the lines below, tell me what kind of tale your heart is hungry for, and I will write back.";
 
 const MAX_HISTORY_MESSAGES = 6;   // last 3 exchanges; older ones fade like candle smoke
 const MAX_NEW_TOKENS = 128;
 // Total download per variant (weights + tokenizer + config), measured on Hugging Face.
 const SIZES_MB = { q4f16: 500, q4: 563, quantized: 367 };
 
+// ───────────────────────── Libby's library (facts) ─────────────────────────
+// Small models misremember books, so facts never come from the model's memory alone:
+//  1. each turn, only the catalog entries relevant to the visitor's message go into the prompt;
+//  2. when the visitor wants a recommendation, the book is chosen here, from the catalog;
+//  3. after each reply, author mix-ups for catalog books are corrected and unknown titles are flagged.
+// LORE-START
+const CATALOG = [
+  // [title, author, year, series, what it's about, tags, aliases]
+  ["The Hobbit", "J.R.R. Tolkien", 1937, "", "Bilbo Baggins joins thirteen dwarves and the wizard Gandalf to win back their treasure from the dragon Smaug", "adventure dragons classic cozy young", ["There and Back Again"]],
+  ["The Lord of the Rings", "J.R.R. Tolkien", "1954–55", "", "Frodo Baggins and the Fellowship carry the One Ring to Mount Doom to destroy it", "epic quest classic", ["The Fellowship of the Ring", "The Two Towers", "The Return of the King", "Lord of the Rings"]],
+  ["The Silmarillion", "J.R.R. Tolkien", 1977, "", "the ancient myths and First Age history of Middle-earth, edited after Tolkien's death by his son Christopher", "epic myth classic", []],
+  ["A Wizard of Earthsea", "Ursula K. Le Guin", 1968, "Earthsea", "the young wizard Ged, in his pride, unleashes a shadow upon the world and must hunt it down", "quiet wise classic school short young", ["Wizard of Earthsea", "Earthsea"]],
+  ["The Tombs of Atuan", "Ursula K. Le Guin", 1971, "Earthsea", "Tenar, priestess of the Nameless Ones, meets Ged in the labyrinth beneath her temple", "quiet wise classic", []],
+  ["The Left Hand of Darkness", "Ursula K. Le Guin", 1969, "", "an envoy to the icy world of Gethen, whose people have no fixed sex (science fiction rather than fantasy)", "winter political classic", []],
+  ["The Name of the Wind", "Patrick Rothfuss", 2007, "The Kingkiller Chronicle", "Kvothe, now a quiet innkeeper, tells the true story of his life as a musician and arcanist", "lyrical school music", []],
+  ["The Wise Man's Fear", "Patrick Rothfuss", 2011, "The Kingkiller Chronicle", "the second part of Kvothe's story, as he travels beyond the University", "lyrical", []],
+  ["Mistborn: The Final Empire", "Brandon Sanderson", 2006, "Mistborn", "Vin, a street thief, joins Kelsier's crew to overthrow the immortal Lord Ruler using Allomancy, the magic of burning metals", "heist clever epic", ["Mistborn", "The Final Empire"]],
+  ["The Way of Kings", "Brandon Sanderson", 2010, "The Stormlight Archive", "Kaladin, Shallan and Dalinar on the storm-swept world of Roshar", "epic", ["Stormlight Archive"]],
+  ["Elantris", "Brandon Sanderson", 2005, "", "Prince Raoden is cursed and cast into the fallen city of Elantris, once home to living gods", "clever political", []],
+  ["Warbreaker", "Brandon Sanderson", 2009, "", "two princess sisters, Vivenna and Siri, in a city where magic is drawn from colour and Breath", "clever political", []],
+  ["The Fifth Season", "N.K. Jemisin", 2015, "The Broken Earth", "Essun, an orogene who can quiet earthquakes, searches for her daughter as the world ends", "dark bold", []],
+  ["The Hundred Thousand Kingdoms", "N.K. Jemisin", 2010, "The Inheritance Trilogy", "Yeine Darr is summoned to a sky-palace where enslaved gods serve the ruling family", "political myth", []],
+  ["Assassin's Apprentice", "Robin Hobb", 1995, "The Farseer Trilogy", "FitzChivalry, a royal bastard, is trained in secret as the king's assassin", "emotional dark", []],
+  ["Ship of Magic", "Robin Hobb", 1998, "The Liveship Traders", "living ships carved from wizardwood, and the Vestrit family who sail them", "emotional epic", []],
+  ["The Eye of the World", "Robert Jordan", 1990, "The Wheel of Time", "Rand al'Thor and his friends flee their village when dark creatures come hunting; the series was finished by Brandon Sanderson", "epic quest", ["Wheel of Time"]],
+  ["The Colour of Magic", "Terry Pratchett", 1983, "Discworld", "the inept wizard Rincewind guides Twoflower, the Discworld's first tourist", "funny", ["The Color of Magic"]],
+  ["Mort", "Terry Pratchett", 1987, "Discworld", "Death takes on a young apprentice named Mort", "funny cozy", []],
+  ["Guards! Guards!", "Terry Pratchett", 1989, "Discworld", "the shabby Night Watch of Ankh-Morpork faces a dragon summoned by a secret society", "funny cozy dragons", ["Guards Guards"]],
+  ["Small Gods", "Terry Pratchett", 1992, "Discworld", "the great god Om returns as a tortoise with only one true believer", "funny myth", []],
+  ["Going Postal", "Terry Pratchett", 2004, "Discworld", "the conman Moist von Lipwig is made to revive Ankh-Morpork's post office", "funny cozy", []],
+  ["The Wee Free Men", "Terry Pratchett", 2003, "Discworld", "nine-year-old Tiffany Aching, armed with a frying pan, goes into Fairyland with the tiny blue Nac Mac Feegle", "funny young fairytale", []],
+  ["Good Omens", "Terry Pratchett and Neil Gaiman", 1990, "", "an angel and a demon who rather like Earth try to stop the apocalypse", "funny", []],
+  ["Stardust", "Neil Gaiman", 1999, "", "Tristran Thorn crosses the wall into Faerie to bring back a fallen star, who turns out to be a woman named Yvaine", "fairytale romance", []],
+  ["Neverwhere", "Neil Gaiman", 1996, "", "Richard Mayhew falls through the cracks into London Below", "dark", []],
+  ["American Gods", "Neil Gaiman", 2001, "", "Shadow Moon is caught in a war between old gods and new ones across America", "myth dark", []],
+  ["Coraline", "Neil Gaiman", 2002, "", "a girl finds a door to an Other Mother with button eyes", "young dark short", []],
+  ["The Ocean at the End of the Lane", "Neil Gaiman", 2013, "", "a man remembers the girl at the end of his lane who said her duck pond was an ocean", "short dark", []],
+  ["The Lion, the Witch and the Wardrobe", "C.S. Lewis", 1950, "The Chronicles of Narnia", "four children step through a wardrobe into Narnia, where Aslan stands against the White Witch", "classic young winter", ["The Lion the Witch and the Wardrobe", "Narnia"]],
+  ["Northern Lights", "Philip Pullman", 1995, "His Dark Materials", "Lyra Belacqua and her daemon Pantalaimon journey to the far North (published in the US as The Golden Compass)", "young winter", ["The Golden Compass", "His Dark Materials"]],
+  ["Uprooted", "Naomi Novik", 2015, "", "Agnieszka is taken by the wizard called the Dragon and must face the corrupted Wood", "fairytale romance", []],
+  ["Spinning Silver", "Naomi Novik", 2018, "", "Miryem, a moneylender's daughter who can turn silver to gold, and the cold Staryk king", "fairytale winter", []],
+  ["His Majesty's Dragon", "Naomi Novik", 2006, "Temeraire", "Captain Laurence and the dragon Temeraire fight in an aerial corps during the Napoleonic Wars", "dragons", ["Temeraire"]],
+  ["A Deadly Education", "Naomi Novik", 2020, "The Scholomance", "El, a sorceress with a dark affinity, tries to survive a school full of monsters", "school dark funny", ["Scholomance"]],
+  ["The Last Unicorn", "Peter S. Beagle", 1968, "", "a unicorn sets out to find the rest of her kind", "bittersweet classic", []],
+  ["Howl's Moving Castle", "Diana Wynne Jones", 1986, "", "Sophie Hatter, cursed into old age, bargains with the fire demon Calcifer in the wizard Howl's castle", "funny cozy young", []],
+  ["Piranesi", "Susanna Clarke", 2020, "", "a gentle man lives alone in an endless House of statues and tides", "strange gentle short", []],
+  ["Jonathan Strange & Mr Norrell", "Susanna Clarke", 2004, "", "two magicians bring English magic back during the Napoleonic Wars", "historical", ["Jonathan Strange and Mr Norrell"]],
+  ["A Game of Thrones", "George R.R. Martin", 1996, "A Song of Ice and Fire", "noble houses fight for the Iron Throne of Westeros while winter and dragons return", "dark political dragons epic", ["Game of Thrones", "A Song of Ice and Fire"]],
+  ["The Lies of Locke Lamora", "Scott Lynch", 2006, "Gentleman Bastard", "Locke and his band of con artists rob the nobles of the city of Camorr", "heist funny", []],
+  ["The Blade Itself", "Joe Abercrombie", 2006, "The First Law", "a torturer, a barbarian and a vain nobleman are drawn into a war", "dark funny", ["First Law"]],
+  ["The Priory of the Orange Tree", "Samantha Shannon", 2019, "", "queens, mages and dragon riders face a waking fire-breathing beast", "dragons epic romance", []],
+  ["The House in the Cerulean Sea", "TJ Klune", 2020, "", "caseworker Linus Baker inspects an island orphanage for magical children", "cozy funny gentle", []],
+  ["Legends & Lattes", "Travis Baldree", 2022, "", "Viv, an orc mercenary, retires to open the first coffee shop in town", "cozy gentle", ["Legends and Lattes"]],
+  ["The Night Circus", "Erin Morgenstern", 2011, "", "two young magicians, Celia and Marco, are bound to a duel inside a circus that opens only at night", "romance atmospheric", []],
+  ["The Starless Sea", "Erin Morgenstern", 2019, "", "a graduate student finds a strange book in his university library that contains a story from his own childhood", "atmospheric", []],
+  ["Circe", "Madeline Miller", 2018, "", "the witch Circe of Greek myth, exiled to the island of Aiaia, finds her own power", "myth", []],
+  ["The Song of Achilles", "Madeline Miller", 2011, "", "the Trojan War told by Patroclus, companion and beloved of Achilles", "myth romance", []],
+  ["Harry Potter and the Philosopher's Stone", "J.K. Rowling", 1997, "Harry Potter", "Harry learns he is a wizard and begins his first year at Hogwarts (called the Sorcerer's Stone in the US)", "school young", ["Harry Potter and the Sorcerer's Stone", "Harry Potter"]],
+  ["Eragon", "Christopher Paolini", "", "The Inheritance Cycle", "a farm boy finds a dragon egg, and the dragon Saphira hatches for him", "dragons young", []],
+  ["Dragonflight", "Anne McCaffrey", 1968, "Dragonriders of Pern", "Lessa bonds with a queen dragon on the world of Pern", "dragons classic", ["Dragonriders of Pern"]],
+  ["The Once and Future King", "T.H. White", 1958, "", "the life of King Arthur, from boyhood lessons with Merlyn to the fall of Camelot", "classic myth", ["The Sword in the Stone"]],
+  ["The Princess Bride", "William Goldman", 1973, "", "Buttercup and the farm boy Westley, with giants, swordsmen and true love", "funny romance adventure", []],
+  ["The Neverending Story", "Michael Ende", 1979, "", "Bastian reads a stolen book and is drawn into the land of Fantastica", "young classic", []],
+  ["Alice's Adventures in Wonderland", "Lewis Carroll", 1865, "", "Alice follows a White Rabbit down a hole into Wonderland", "classic young funny", ["Alice in Wonderland"]],
+  ["The Wonderful Wizard of Oz", "L. Frank Baum", 1900, "", "Dorothy is carried by a cyclone to Oz and follows the yellow brick road", "classic young", ["The Wizard of Oz"]],
+  ["A Darker Shade of Magic", "V.E. Schwab", 2015, "Shades of Magic", "Kell, one of the last magicians who can travel between parallel Londons", "adventure", []],
+  ["The Invisible Life of Addie LaRue", "V.E. Schwab", 2020, "", "a woman makes a bargain to live forever but be forgotten by everyone she meets", "romance bittersweet", ["Addie LaRue"]],
+  ["Six of Crows", "Leigh Bardugo", 2015, "", "Kaz Brekker leads six outcasts on an impossible heist", "heist young", []],
+  ["Shadow and Bone", "Leigh Bardugo", 2012, "", "Alina Starkov discovers a rare power to summon light", "young", []],
+  ["The Poppy War", "R.F. Kuang", 2018, "", "war orphan Rin tests into an elite military academy and discovers shamanic power", "dark school", []],
+  ["Babel", "R.F. Kuang", 2022, "", "Robin Swift studies at Oxford's translation institute, where magic is worked through silver", "dark school historical", []],
+  ["The Goblin Emperor", "Katherine Addison", 2014, "", "Maia, a shy half-goblin prince, unexpectedly becomes emperor", "gentle political cozy", []],
+  ["The Bear and the Nightingale", "Katherine Arden", 2017, "Winternight", "Vasya, in medieval Russia, can see the household spirits that protect her village", "fairytale winter", []],
+  ["Children of Blood and Bone", "Tomi Adeyemi", 2018, "", "Zélie fights to bring magic back to the land of Orïsha", "young", []],
+  ["Gideon the Ninth", "Tamsyn Muir", 2019, "The Locked Tomb", "a sword-loving swordswoman serves a necromancer in a deadly trial inside a haunted palace", "dark funny", []],
+  ["The Black Company", "Glen Cook", 1984, "", "a band of mercenaries serves a sorceress called the Lady", "dark", []],
+  ["Tigana", "Guy Gavriel Kay", 1990, "", "rebels fight a sorcerer who has erased the very name of their homeland", "bittersweet political", []],
+  ["Sabriel", "Garth Nix", 1995, "The Old Kingdom", "Sabriel, daughter of the necromancer Abhorsen, crosses into the Old Kingdom to find her father", "young dark", []],
+  ["The Golem and the Jinni", "Helene Wecker", 2013, "", "a golem and a jinni meet in New York in 1899", "historical gentle", []],
+  ["Redwall", "Brian Jacques", 1986, "Redwall", "the mice of Redwall Abbey defend their home from the rat warlord Cluny", "young cozy adventure", []],
+  ["Watership Down", "Richard Adams", 1972, "", "a band of rabbits seeks a new home after their warren is destroyed", "classic adventure", []],
+  ["The Dark Is Rising", "Susan Cooper", 1973, "The Dark Is Rising", "on his eleventh birthday Will Stanton learns he is the last of the Old Ones", "young winter", []],
+  ["The Book of Three", "Lloyd Alexander", 1964, "The Chronicles of Prydain", "Taran, an assistant pig-keeper, sets out after a runaway oracular pig", "young classic", ["Prydain"]],
+  ["Dealing with Dragons", "Patricia C. Wrede", 1990, "The Enchanted Forest Chronicles", "the bored Princess Cimorene runs away to keep house for a dragon", "funny cozy dragons young", []],
+  ["Ella Enchanted", "Gail Carson Levine", 1997, "", "Ella, cursed at birth to always obey, sets out to break the spell", "funny fairytale young", []],
+  ["Seraphina", "Rachel Hartman", 2012, "", "a musician hides her secret in a kingdom where dragons can take human form", "dragons young", []],
+  ["Throne of Glass", "Sarah J. Maas", 2012, "", "the assassin Celaena Sardothien competes to become the king's champion", "young", []],
+  ["A Court of Thorns and Roses", "Sarah J. Maas", 2015, "", "the huntress Feyre is taken into the faerie lands of Prythian", "romance fairytale", []],
+  ["Fourth Wing", "Rebecca Yarros", 2023, "The Empyrean", "Violet Sorrengail is forced into a war college for dragon riders", "dragons romance school", []],
+  ["The Lightning Thief", "Rick Riordan", 2005, "Percy Jackson and the Olympians", "Percy Jackson learns he is the son of Poseidon", "myth young funny", ["Percy Jackson"]],
+  ["The Last Wish", "Andrzej Sapkowski", 1993, "The Witcher", "stories of Geralt of Rivia, a monster hunter for hire", "dark short", ["The Witcher"]],
+  ["Gardens of the Moon", "Steven Erikson", 1999, "Malazan Book of the Fallen", "the Malazan Empire's campaign against the free city of Darujhistan", "epic dark", ["Malazan"]],
+  ["Magician", "Raymond E. Feist", 1982, "The Riftwar Saga", "the orphan Pug trains as a magician when invaders come through a rift", "epic school", []],
+  ["Pawn of Prophecy", "David Eddings", 1982, "The Belgariad", "the farm boy Garion learns his family is far stranger than he knew", "quest classic", ["Belgariad"]],
+  ["The Sword of Shannara", "Terry Brooks", 1977, "Shannara", "Shea Ohmsford, a half-elf, is the last heir who can wield a legendary sword", "quest classic elves", []],
+  ["The City of Brass", "S.A. Chakraborty", 2017, "The Daevabad Trilogy", "Nahri, a con artist in Cairo, is pulled into the djinn city of Daevabad", "political myth", []],
+  ["Jade City", "Fonda Lee", 2017, "The Green Bone Saga", "the Kaul family's clan of jade-powered warriors in a gangster war", "dark political", []],
+  ["Nettle & Bone", "T. Kingfisher", 2022, "", "a quiet nun sets out with a gravewitch and a dust-dog to kill a cruel prince", "funny dark fairytale", ["Nettle and Bone"]],
+  ["A Wizard's Guide to Defensive Baking", "T. Kingfisher", 2020, "", "Mona, a fourteen-year-old who can work magic only on bread, must defend her city", "funny cozy young", []],
+  ["The Ten Thousand Doors of January", "Alix E. Harrow", 2019, "", "January Scaller finds a book about doors that lead to other worlds", "atmospheric", []],
+  ["Titus Groan", "Mervyn Peake", 1946, "Gormenghast", "the birth of Titus, heir to the vast, crumbling castle of Gormenghast", "strange classic", ["Gormenghast"]],
+  ["Lud-in-the-Mist", "Hope Mirrlees", 1926, "", "a staid town that has banned fairy fruit finds it smuggled across the border", "fairytale classic strange", []],
+  ["The King of Elfland's Daughter", "Lord Dunsany", 1924, "", "a mortal prince weds the daughter of the king of Elfland", "elves fairytale classic", []],
+  ["The Broken Sword", "Poul Anderson", 1954, "", "a changeling raised by elves, and a cursed sword, in a war between elves and trolls", "elves dark classic", []],
+  ["The Cruel Prince", "Holly Black", 2018, "The Folk of the Air", "Jude, a mortal girl raised in the High Court of Faerie, schemes for power", "fairytale young political elves", []],
+].map(([title, author, year, series, about, tags, aliases]) => ({ title, author, year, series, about, tags: tags.split(" "), aliases }));
+
+// Books whose heart is a wizard, witch or magician.
+const WIZARDLY = ["A Wizard of Earthsea", "The Name of the Wind", "The Night Circus", "Jonathan Strange & Mr Norrell", "Magician",
+  "Howl's Moving Castle", "A Darker Shade of Magic", "The Colour of Magic", "A Deadly Education", "Harry Potter and the Philosopher's Stone",
+  "Circe", "Uprooted", "The Once and Future King", "A Wizard's Guide to Defensive Baking", "Sabriel"];
+for (const b of CATALOG) if (WIZARDLY.includes(b.title)) b.tags.push("wizards");
+
+const MOODS = {
+  funny: /\b(funny|humou?r|laugh|comic|comedy|witty|silly|hilarious)/i,
+  cozy: /\b(cozy|cosy|comfort|wholesome|heart-?warming|soothing|relaxing|light|feel-?good)/i,
+  gentle: /\b(gentle|kind|soft|calm|quiet|peaceful)/i,
+  dragons: /\bdragons?\b/i,
+  dark: /\b(dark|grim|grimdark|gritty|brutal|bleak|scary|horror|creepy)/i,
+  romance: /\b(romance|romantic|love story|swoon)/i,
+  young: /\b(kids?|child|children|young|teen|ya|middle[- ]grade|my (son|daughter|nephew|niece))\b/i,
+  school: /\b(school|academy|student|university|college)/i,
+  heist: /\b(heist|thie(f|ves)|con ?artist|caper)/i,
+  epic: /\b(epic|long series|sweeping|big series|huge world)/i,
+  fairytale: /\b(fairy[- ]?tales?|folk ?tales?|faerie|fae)\b/i,
+  myth: /\b(myths?|mythology|greek|norse|gods?)\b/i,
+  short: /\b(short|quick read|novella|small book)/i,
+  elves: /\b(elf|elves|elven|elfland)\b/i,
+  winter: /\b(winter|snow|cold|frost)/i,
+  classic: /\b(classic|old book|older)/i,
+  political: /\b(politic|court intrigue|intrigue|scheming)/i,
+  quest: /\b(quest|journey|adventure)/i,
+  wizards: /\b(wizards?|witch(es)?|magicians?|sorcer(er|ess|y)|mages?|spells?)\b/i,
+};
+const RECOMMEND = /\b(recommend|suggest|anything|what (should|can|could) i read|read next|looking for|in the mood|give me|find me|any (good )?books?|a book|something|similar|like that|another)\b/i;
+const ASKS_ABOUT = /\b(who wrote|author of|written by|what('s| is) .* about|have you read|do you know|tell me about|is .* good)\b/i;
+const FAVOURITE = /\bfavou?rite\b/i;
+const OFF_TOPIC = /\b(car|cars|brakes?|engine|tyres?|tires?|code|coding|program(ming)?|python|javascript|computer|laptop|phone|wifi|doctor|medicine|health|pain|sick|tax(es)?|money|invest(ing)?|stocks?|news|weather|recipe|math|homework|lawyer|legal)\b/i;
+const BOOKISH = /\b(book|books|read|reading|novel|story|stories|author|tale|series|fantasy|library|shelf)\b/i;
+// Surnames that are also ordinary words or very common names: match these only by full name.
+const AMBIGUOUS_SURNAMES = new Set(["white", "black", "lee", "miller", "jordan", "adams", "cook", "kay", "nix", "lynch", "martin", "brooks", "carroll", "lewis", "ende", "baum", "black", "jones", "kingfisher", "alexander", "levine"]);
+
+const norm = (s) => s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ").trim();
+const surname = (name) => norm(name.split(" and ")[0]).split(" ").at(-1);
+const authorsOf = (b) => b.author.split(" and ").map((a) => a.trim());
+
+// Does `text` mention this title? Single-word titles ("Mort", "Magician") must be capitalised, to avoid
+// matching ordinary words.
+function mentionsTitle(text, b) {
+  const n = " " + norm(text) + " ";
+  return [b.title, ...b.aliases].some((t) => {
+    const k = norm(t).replace(/^the /, "");
+    if (!k) return false;
+    if (!k.includes(" ")) return new RegExp(`\\b${t.replace(/^The /, "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(text);
+    return n.includes(" " + k + " ");
+  });
+}
+function mentionsAuthor(text, author) {
+  const n = " " + norm(text) + " ";
+  if (n.includes(" " + norm(author) + " ")) return true;
+  const s = surname(author);
+  if (AMBIGUOUS_SURNAMES.has(s)) return false;
+  return new RegExp(`\\b${author.split(" ").at(-1).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(text);
+}
+
+const line = (b) => `- ${b.title} by ${b.author}${b.year ? ` (${b.year})` : ""}${b.series ? `, in the ${b.series.replace(/^The /, "")} series` : ""}: ${b.about}.`;
+
+/** Pick the facts for this turn and say what to do with them. */
+function lorePrompt(message, history, recommended) {
+  const named = CATALOG.filter((b) => mentionsTitle(message, b));
+  const byAuthor = CATALOG.filter((b) => !named.includes(b) && authorsOf(b).some((a) => mentionsAuthor(message, a)));
+  const moods = Object.keys(MOODS).filter((m) => MOODS[m].test(message));
+  const wantsBook = RECOMMEND.test(message) || moods.length > 0;
+
+  const facts = [...named.slice(0, 3), ...byAuthor.slice(0, 4 - Math.min(named.length, 3))];
+  let pick = null;
+  if (wantsBook || FAVOURITE.test(message) || OFF_TOPIC.test(message) || (!named.length && !byAuthor.length)) {
+    // Score every unrecommended book by shared moods with the request and with any books named in it.
+    const wanted = new Set([...moods, ...named.flatMap((b) => b.tags)]);
+    const pool = CATALOG.filter((b) => !named.includes(b) && !recommended.has(b.title));
+    const scored = pool.map((b) => ({ b, s: b.tags.filter((t) => wanted.has(t)).length + (moods.every((m) => b.tags.includes(m)) && moods.length ? 2 : 0) }));
+    const best = Math.max(0, ...scored.map((x) => x.s));
+    const top = scored.filter((x) => x.s === best && (best > 0 || x.b.tags.includes("classic") || x.b.tags.includes("cozy")));
+    const fromAuthor = byAuthor.filter((b) => !recommended.has(b.title));
+    if (FAVOURITE.test(message) && !moods.length && !named.length) pick = CATALOG.find((b) => b.title === "The King of Elfland's Daughter");
+    else if (wantsBook && fromAuthor.length) pick = fromAuthor[Math.floor(Math.random() * fromAuthor.length)];
+    else pick = top.length ? top[Math.floor(Math.random() * top.length)].b : null;
+  }
+  if (pick && !facts.includes(pick)) facts.push(pick);
+
+  const lines = [];
+  if (facts.length) lines.push("True facts from your shelves for this reply:", ...facts.map(line));
+  if (pick && FAVOURITE.test(message) && !moods.length) lines.push(`If asked for your favourite, it is ${pick.title} by ${pick.author}, because you are an elf yourself.`);
+  else if (pick && (wantsBook || !named.length)) lines.push(`If you recommend a book, recommend ${pick.title} by ${pick.author}.`);
+  if (!named.length && !byAuthor.length && ASKS_ABOUT.test(message)) {
+    lines.push("The reader asked about a book that is not on your shelves. Say softly that you do not know it well; do not guess its author or story.");
+  }
+  lines.push("Name no other books or authors than these.");
+
+  // Start Libby's reply with the true title and author, so the model only has to continue in her voice.
+  const cite = (b) => `*${b.title}* by ${b.author}`;
+  const openers = ["Oh, I know just the one:", "Then let me draw a true book from my shelves:", "The pages are already rustling for", "Come closer, I have one for you:"];
+  let prefix = "";
+  const unknownAsked = !named.length && !byAuthor.length && ASKS_ABOUT.test(message);
+  const offTopic = OFF_TOPIC.test(message) && !BOOKISH.test(message) && !named.length && !byAuthor.length;
+  if (offTopic && pick) prefix = `Alas, that is beyond my scroll, for I know only ink and the tales it holds. But if you'd like a story for the wait, there is ${cite(pick)}`;
+  else if (pick && FAVOURITE.test(message) && !moods.length && !named.length) prefix = `If I must choose just one, it is ${cite(pick)}`;
+  else if (unknownAsked && pick) prefix = `I'm afraid that one isn't written in my scroll, and I won't guess at its story. If you'd like a true tale instead, there is ${cite(pick)}`;
+  else if (named.length && ASKS_ABOUT.test(message) && !RECOMMEND.test(message)) prefix = `*${named[0].title}* was written by ${named[0].author}`;
+  else if (pick && wantsBook) prefix = `${openers[Math.floor(Math.random() * openers.length)]} ${cite(pick)}`;
+  return { text: lines.join("\n"), pick: prefix || wantsBook ? pick : null, prefix };
+}
+
+/**
+ * Turn the model's raw reply into what goes on the page: prose only, authors corrected, and anything
+ * after the first title that isn't in the catalog cut away. Returns any unknown titles that remain.
+ */
+function finalize(raw, lore) {
+  const first = checkFacts(tidy(raw));
+  if (!first.unknown.length) return first;
+  const t = first.text;
+  const at = Math.min(...first.unknown.map((u) => t.indexOf(u)).filter((i) => i >= 0));
+  // Cut at the end of the last full sentence before the unknown title (not at initials like "C."),
+  // but always keep the true opening that was written for her.
+  const keep = lore?.prefix?.length || 0;
+  let cutAt = -1;
+  for (const m of t.matchAll(/([.!?…]["”’)*]*)\s+/g)) {
+    if (m.index >= at) break;
+    if (/(^|[\s.])[A-Z]$/.test(t.slice(0, m.index))) continue;
+    cutAt = m.index + m[1].length;
+  }
+  if (cutAt < keep) cutAt = keep;
+  let text = t.slice(0, cutAt).trim();
+  if (!text) return first;
+  if (!/[.!?…]["”’)*]*$/.test(text)) text += ".";
+  if (lore?.pick && text.length < keep + 60) text += ` In its pages, ${lore.pick.about}.`;
+  return checkFacts(text);
+}
+
+/** Correct author mix-ups for catalog books, and list titles Libby named that aren't in the catalog. */
+function checkFacts(reply) {
+  let text = reply;
+  const unknown = [];
+  // A personal name: initials ("J.R.R."), short caps ("TJ") or capitalised words; never runs past a full stop.
+  const W = "(?:[A-Z]\\.(?:\\s?[A-Z]\\.)*|[A-Z]{2,3}|[A-Z][a-z'’-]+)";
+  const NAME = `(${W}(?:\\s+(?:${W}|de|le|von|van))*)`;
+  const FILLER = "(?:(?:the|a|an|venerable|author|great|beloved|legendary|talented|writer|renowned|brilliant|wonderful|master|storyteller)\\s+)*";
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const sameAuthor = (name, b) => authorsOf(b).some((a) => norm(name).includes(surname(a)) || norm(a).includes(norm(name)));
+
+  for (const b of CATALOG) {
+    for (const t of [b.title, ...b.aliases]) {
+      const T = `["“”'‘’*_]*${esc(t)}["“”'‘’*_]*`;
+      // "Title by Name", "Title, written by Name", "Title (1968) by Name"
+      text = text.replace(new RegExp(`(${T}[^.!?\\n]{0,40}?\\bby\\s+${FILLER})${NAME}`, "g"), (m, pre, name) => (sameAuthor(name, b) ? m : pre + b.author));
+      // "Name's Title"
+      text = text.replace(new RegExp(`${NAME}(['’]s\\s+${T})`, "g"), (m, name, post) => (sameAuthor(name, b) || /^(Libby|Libraria|My|Your|The)$/.test(name) ? m : b.author + post));
+      // A publication year right after the title ("…published in 2005") must match the catalog.
+      if (typeof b.year === "number") {
+        text = text.replace(new RegExp(`(${T}[^!?\\n]{0,80}?\\b(?:in|published|written|released|from)\\s+(?:in\\s+)?)(1[5-9]\\d\\d|20\\d\\d)\\b`, "g"),
+          (m, pre, year) => (/\bborn\b/i.test(pre) ? m : pre + b.year));
+      }
+      // "Name wrote/penned Title"
+      text = text.replace(new RegExp(`${NAME}(\\s+(?:wrote|penned|authored|created|gave us)\\s+${T})`, "g"), (m, name, post) => (sameAuthor(name, b) ? m : b.author + post));
+    }
+  }
+  // Titles in quotes, asterisks or italics, or "Capitalised Title by Name", that aren't in the catalog.
+  const candidates = [
+    ...[...text.matchAll(/[“"*_]([A-Z][^“”"*_\n]{2,60})[”"*_]/g)].map((m) => m[1]),
+    ...[...text.matchAll(/((?:(?:The|A|An)\s+)?[A-Z][\w'’:-]*(?:\s+(?:of|the|and|in|a|an|to|for|[A-Z][\w'’:-]*))+)\s+by\s+[A-Z]/g)].map((m) => m[1]),
+  ];
+  for (const raw of candidates) {
+    // Drop sentence openers that precede a title ("Try Mistborn by …", "Perhaps The Hobbit by …").
+    const c = raw.replace(/^(?:(?:Try|Read|Consider|Perhaps|Maybe|Ah|Oh|Then|And|But|So|Also|Pick|Grab|Explore|Discover|Enjoy|Or|Yes|Well|Next)\b[\s,]*)+/, "");
+    const n = norm(c);
+    if (n.split(" ").length < 2 || n.length < 6) continue;
+    // Must look like a title (mostly capitalised words), not an italic stage direction.
+    const words = c.split(/\s+/).filter((w) => w.length > 3);
+    if (words.length && words.filter((w) => /^[A-Z]/.test(w)).length / words.length < 0.6) continue;
+    const known = CATALOG.some((b) => {
+      const keys = [b.title, b.series, ...b.aliases].filter(Boolean).map(norm).sort((x, y) => y.length - x.length);
+      if (keys.some((k) => k.includes(n))) return true;              // a shortened real title
+      let rest = " " + n + " ";
+      for (const k of keys) rest = rest.replace(" " + k + " ", " ");
+      return !rest.replace(/\b(the|a|an|of|and|book|one|two|series|saga|trilogy|cycle|chronicles?)\b/g, "").trim();
+    });
+    const isAuthor = CATALOG.some((b) => authorsOf(b).some((a) => norm(a) === n));
+    if (!known && !isAuthor && !unknown.includes(c)) unknown.push(c);
+  }
+  return { text, unknown };
+}
+/** Keep replies as prose: drop any list she slides into, and end on the last full sentence. */
+function tidy(text) {
+  let t = text.trim();
+  const list = t.search(/\n\s*(\d+\.|[-*•])\s/);
+  if (list > 40) t = t.slice(0, list).trim();
+  if (!/[.!?…"”’)*~]$/.test(t)) {
+    const cut = Math.max(t.lastIndexOf(". "), t.lastIndexOf("! "), t.lastIndexOf("? "), t.lastIndexOf("… "));
+    if (cut > 40) t = t.slice(0, cut + 1);
+    else t += "…";
+  }
+  return t;
+}
+// LORE-END
+
 // ───────────────────────── UI wiring ─────────────────────────
 const $ = (id) => document.getElementById(id);
-const log = $("log"), input = $("input"), send = $("send"), form = $("form");
+const log = $("log"), input = $("input"), form = $("form"), send = $("send");
 const downloadBtn = $("download"), resetBtn = $("reset"), statusEl = $("status");
 const chips = [...$("chips").querySelectorAll("button")];
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 let history = [];
 let busy = false;
 let ready = false;
-let current = null;   // the Libby bubble being streamed into
+let current = null;              // the reply Libby is writing into
+const recommended = new Set();   // titles already offered, so she suggests something new each time
 
-// Drifting motes
+// ── Libby's portrait: hair strands drawn with a fixed seed, so she looks the same on every visit ──
+(function drawPortrait() {
+  const NS = "http://www.w3.org/2000/svg";
+  let seed = 20240611;
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  const add = (parent, tag, attrs) => { const el = document.createElementNS(NS, tag); for (const k in attrs) el.setAttribute(k, attrs[k]); parent.appendChild(el); return el; };
+  const back = $("hair-back"), front = $("hair-front"), deco = $("hair-deco"), sparkles = $("sparkles");
+
+  // Smooth curve through points (Catmull-Rom → cubic Bézier).
+  const smooth = (pts) => {
+    let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+      const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      d += `C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+    }
+    return d;
+  };
+  const inkFor = () => { const r = rnd(); return r < 0.45 ? "p-strand soft" : r < 0.7 ? "p-strand" : r < 0.93 ? "p-strand lit" : "p-strand glint"; };
+  // One strand: from the crown, around the head, then falling in slow waves that widen towards the hem.
+  const strand = (side, sx, sy, outer, drift) => {
+    const phase = rnd() * 6.28, offset = (rnd() - 0.4) * 16, pts = [[sx, sy]];
+    for (let y = sy + 14; y <= 256; y += 14) {
+      const t = Math.min(1, (y - sy) / 46);
+      const fall = outer + side * (y > 100 ? (y - 100) * (0.2 + drift) : 0);
+      const head = sx + (fall - sx) * (1 - (1 - t) * (1 - t));
+      const wave = Math.sin(y / 21 + phase) * (1 + (y - 60) / 40);
+      pts.push([head + side * offset * (0.25 + (y - 60) / 200) + wave, y]);
+    }
+    return smooth(pts);
+  };
+  // Behind: both sides of the head, flowing past the shoulders.
+  for (let i = 0; i < 90; i++) {
+    const left = i % 2 === 0, s0 = rnd();
+    const d = left ? strand(-1, 104 - 22 * s0, 51 + 24 * s0 * s0, 72, rnd() * 0.14) : strand(1, 106 + 22 * s0, 51 + 24 * s0 * s0, 138, rnd() * 0.14);
+    add(back, "path", { d, class: inkFor(), "stroke-width": (0.3 + rnd() * 0.6).toFixed(2), opacity: (0.3 + rnd() * 0.5).toFixed(2) });
+  }
+  // A few loose strands drifting outward, as if in water or starlight.
+  for (let i = 0; i < 8; i++) {
+    const left = i % 2 === 0;
+    add(back, "path", { d: strand(left ? -1 : 1, left ? 96 : 114, 56, left ? 66 : 144, 0.22 + rnd() * 0.12), class: "p-strand lit", "stroke-width": "0.45", opacity: (0.35 + rnd() * 0.3).toFixed(2) });
+  }
+  // In front: hair swept over the left brow and falling before the shoulder.
+  for (let i = 0; i < 26; i++) {
+    const d = strand(-1, 103 - rnd() * 4, 53 + rnd() * 2, 81 + rnd() * 4, 0.02 + rnd() * 0.08);
+    add(front, "path", { d, class: inkFor(), "stroke-width": (0.3 + rnd() * 0.55).toFixed(2), opacity: (0.4 + rnd() * 0.5).toFixed(2) });
+  }
+  // On the right, strands sweep over the brow and tuck behind the ear.
+  for (let i = 0; i < 12; i++) {
+    const r = () => rnd() - 0.5;
+    add(front, "path", { d: smooth([[106 + i * 0.6, 53], [118 + r() * 3, 58], [126 + r() * 3, 70], [128 + r() * 2, 86]]), class: inkFor(), "stroke-width": (0.3 + rnd() * 0.5).toFixed(2), opacity: (0.4 + rnd() * 0.45).toFixed(2) });
+  }
+  // Hair swept from the centre parting down over each temple.
+  for (let i = 0; i < 22; i++) {
+    const k = rnd(), j = () => (rnd() - 0.5) * 2.5;
+    const left = i % 2 === 0;
+    const pts = left
+      ? [[104.5, 53 + k * 4], [97 + j(), 58 + k * 8], [89 + j(), 68 + k * 9], [84 + j(), 82 + k * 6], [83 + j(), 96]]
+      : [[105.5, 53 + k * 4], [113 + j(), 58 + k * 8], [121 + j(), 67 + k * 9], [126 + j(), 80 + k * 5], [127 + j(), 90]];
+    add(front, "path", { d: smooth(pts), class: inkFor(), "stroke-width": (0.3 + rnd() * 0.45).toFixed(2), opacity: (0.45 + rnd() * 0.45).toFixed(2) });
+  }
+  // The parting.
+  add(front, "path", { d: "M105 52Q104 56 104 60", class: "p-soft", "stroke-width": ".6" });
+  // Stars and leaves woven into her hair.
+  const star = (cx, cy, rr) => `M${cx} ${cy - rr}Q${cx} ${cy} ${cx + rr} ${cy}Q${cx} ${cy} ${cx} ${cy + rr}Q${cx} ${cy} ${cx - rr} ${cy}Q${cx} ${cy} ${cx} ${cy - rr}Z`;
+  [[72, 128, 4], [138, 150, 3.5], [60, 186, 3], [150, 200, 4], [82, 222, 2.5]].forEach(([x, y, rr]) => add(deco, "path", { d: star(x, y, rr), class: "p-gold" }));
+  [[88, 64, -30], [124, 64, 35], [70, 148, -60], [144, 128, 50]].forEach(([x, y, rot]) => add(deco, "ellipse", { cx: x, cy: y, rx: 5, ry: 2, transform: `rotate(${rot} ${x} ${y})`, class: "p-leaf" }));
+  // Motes of light around the frame.
+  [[14, 60], [186, 48], [8, 170], [192, 190], [40, 12], [162, 238]].forEach(([x, y], i) => {
+    const el = add(sparkles, "path", { d: star(x, y, 3 + (i % 2)), class: "sparkle" });
+    el.style.animationDelay = `${i * 0.5}s`;
+  });
+})();
+
+// ── Drifting motes in the room ──
 const motes = document.querySelector(".motes");
-for (let i = 0; i < 18; i++) {
+for (let i = 0; i < 16; i++) {
   const s = document.createElement("span");
-  s.style.left = Math.random() * 100 + "%";
-  s.style.animationDuration = 14 + Math.random() * 16 + "s";
-  s.style.animationDelay = -Math.random() * 30 + "s";
-  const size = 3 + Math.random() * 5;
-  s.style.width = s.style.height = size + "px";
+  const size = 2 + Math.random() * 4;
+  Object.assign(s.style, { left: Math.random() * 100 + "%", width: size + "px", height: size + "px", animationDuration: 16 + Math.random() * 18 + "s", animationDelay: -Math.random() * 34 + "s" });
   motes.appendChild(s);
 }
 
-// Theme toggle (remembered per browser when storage is available)
+// ── Theme toggle (remembered per browser when storage is available) ──
 const root = document.documentElement;
 const prefersDark = () => matchMedia("(prefers-color-scheme: dark)").matches;
 function applyTheme(t) {
   if (t) root.dataset.theme = t; else delete root.dataset.theme;
-  const dark = t ? t === "dark" : prefersDark();
-  $("theme").textContent = dark ? "☀" : "☾";
+  $("theme").textContent = (t ? t === "dark" : prefersDark()) ? "☀" : "☾";
 }
 try { applyTheme(localStorage.getItem("libby-theme")); } catch { applyTheme(null); }
 $("theme").onclick = () => {
-  const dark = root.dataset.theme ? root.dataset.theme === "dark" : prefersDark();
-  const next = dark ? "light" : "dark";
+  const next = (root.dataset.theme ? root.dataset.theme === "dark" : prefersDark()) ? "light" : "dark";
   applyTheme(next);
   try { localStorage.setItem("libby-theme", next); } catch {}
 };
 
+// ── Writing on the scroll ──
 function escapeHtml(s) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 function render(text) {
-  // Allow *emphasis* for titles or soft stage directions; everything else is plain text.
+  // *Emphasis* shows titles in gold ink; everything else is plain text.
   return escapeHtml(text).replace(/\*\*?([^*\n]+)\*\*?/g, "<em>$1</em>");
 }
 function addMessage(who, text) {
@@ -462,44 +1009,72 @@ function addMessage(who, text) {
   log.scrollTop = log.scrollHeight;
   return div;
 }
-// If the reply was cut off by the token limit, end it on the last full sentence.
-function tidy(text) {
-  let t = text.trim();
-  if (!/[.!?…"”’)*~]$/.test(t)) {
-    const cut = Math.max(t.lastIndexOf(". "), t.lastIndexOf("! "), t.lastIndexOf("? "), t.lastIndexOf("… "));
-    if (cut > 40) t = t.slice(0, cut + 1);
-    else t += "…";
-  }
-  return t;
+// Each new piece of Libby's reply soaks into the parchment like ink.
+function inkAppend(el, text) {
+  const span = document.createElement("span");
+  span.className = "ink";
+  span.textContent = text;
+  el.appendChild(span);
 }
-
+function writeSlowly(el, text, done) {
+  if (reduceMotion) { el.innerHTML = render(text); done?.(); return; }
+  const parts = text.split(/(\s+)/);
+  let i = 0;
+  (function step() {
+    if (!el.isConnected) return;
+    if (i >= parts.length) { el.innerHTML = render(text); done?.(); return; }
+    inkAppend(el, parts[i++]);
+    log.scrollTop = log.scrollHeight;
+    setTimeout(step, 38);
+  })();
+}
+function addMarginNote(unknown) {
+  const p = document.createElement("p");
+  p.className = "margin-note";
+  p.textContent = `✦ I can't find ${unknown.map((t) => `“${t}”`).join(" or ")} in my catalog, so that may be a trick of my memory. Please check it before you trust it.`;
+  log.appendChild(p);
+  log.scrollTop = log.scrollHeight;
+}
 function setBusy(b) {
   busy = b;
-  send.textContent = b ? "Hush" : "Send";
+  $("send-label").textContent = b ? "Hush" : "Send";
   send.disabled = !ready;
   input.disabled = !ready;
   chips.forEach((c) => (c.disabled = !ready || b));
   resetBtn.disabled = !ready || b;
-  statusEl.textContent = !ready ? "asleep" : b ? "turning pages…" : "awake";
+  statusEl.textContent = !ready ? "Libby sleeps in the scroll" : b ? "Libby is writing…" : "Libby is listening";
+  document.body.classList.toggle("writing", b);
 }
 
 function resetChat() {
   history = [];
+  recommended.clear();
   log.innerHTML = "";
-  addMessage("libby", GREETING);
+  writeSlowly(addMessage("libby", ""), GREETING);
 }
 
 function ask(text) {
   text = text.trim();
   if (!text || busy || !ready) return;
   addMessage("user", text);
+  const lore = lorePrompt(text, history, recommended);
+  if (lore.pick) recommended.add(lore.pick.title);
   history.push({ role: "user", content: text });
   history = history.slice(-MAX_HISTORY_MESSAGES);
   current = addMessage("libby", "");
   current.classList.add("thinking");
-  current._raw = "";
+  current._raw = lore.prefix;
+  current._lore = lore;
+  if (lore.prefix) { current.classList.remove("thinking"); inkAppend(current, lore.prefix); }
   setBusy(true);
-  worker.postMessage({ type: "generate", system: { role: "system", content: SYSTEM_PROMPT }, example: EXAMPLE, history, maxNewTokens: MAX_NEW_TOKENS });
+  worker.postMessage({
+    type: "generate",
+    system: { role: "system", content: SYSTEM_PROMPT + "\n\n" + lore.text },
+    example: EXAMPLE,
+    history,
+    prefix: lore.prefix,
+    maxNewTokens: MAX_NEW_TOKENS,
+  });
 }
 
 form.addEventListener("submit", (e) => {
@@ -515,7 +1090,7 @@ input.addEventListener("keydown", (e) => {
 });
 input.addEventListener("input", () => {
   input.style.height = "auto";
-  input.style.height = Math.min(input.scrollHeight, 140) + "px";
+  input.style.height = Math.min(Math.max(input.scrollHeight, 72), 144) + "px";
 });
 chips.forEach((c) => (c.onclick = () => ask(c.textContent)));
 resetBtn.onclick = resetChat;
@@ -527,17 +1102,22 @@ const worker = new Worker(
 );
 
 const fmtMB = (bytes) => (bytes / 1e6).toFixed(0);
+function setProgress(pct) {
+  $("fill").style.width = pct.toFixed(1) + "%";
+  $("quill").style.left = pct.toFixed(1) + "%";
+  $("bar").setAttribute("aria-valuenow", pct.toFixed(0));
+}
 
 worker.onmessage = ({ data }) => {
   switch (data.type) {
     case "backend": {
       const gpu = data.device === "webgpu";
-      $("backend").innerHTML = `<i></i>${gpu ? "WebGPU: fast, on your graphics card" : "No WebGPU: a lighter Libby runs on your CPU"}`;
+      $("backend").textContent = gpu ? "Fast, on your graphics card" : "No WebGPU here: a lighter Libby, on your CPU";
       $("size").textContent = `about ${SIZES_MB[data.dtype]} MB`;
-      if (data.fallback) $("phase").textContent = "Your GPU couldn't host her; trying the CPU instead…";
-      if (!data.fallback) {
+      if (data.fallback) $("phase").textContent = "Your graphics card couldn't hold her; trying your CPU instead…";
+      else {
         downloadBtn.disabled = false;
-        downloadBtn.textContent = data.cached
+        $("download-label").textContent = data.cached
           ? "Wake Libby (already on this device)"
           : `Download model (${SIZES_MB[data.dtype]} MB)`;
       }
@@ -545,36 +1125,39 @@ worker.onmessage = ({ data }) => {
     }
     case "progress": {
       const pct = Math.min(100, data.progress || 0);
-      $("fill").style.width = pct.toFixed(1) + "%";
-      $("bar").setAttribute("aria-valuenow", pct.toFixed(0));
+      setProgress(pct);
       $("phase").textContent = pct < 100 ? "Gathering pages…" : "Binding the book…";
       $("amount").textContent = `${fmtMB(data.loaded)} / ${fmtMB(data.total)} MB · ${pct.toFixed(0)}%`;
       break;
     }
     case "phase":
-      $("fill").style.width = "100%";
+      setProgress(100);
       $("phase").textContent = data.text;
       break;
     case "ready":
       ready = true;
-      $("phase").textContent = data.device === "webgpu" ? "Awake, running on your GPU." : "Awake, running on your CPU.";
-      downloadBtn.textContent = "Libby is awake ✦";
+      $("note").hidden = true;
+      $("progress").hidden = true;
+      $("download-label").textContent = "Libby is awake";
+      $("backend").textContent = data.device === "webgpu" ? "Writing from your graphics card" : "Writing from your CPU";
       setBusy(false);
-      input.placeholder = "Ask Libby about a book…";
+      input.placeholder = "Write to Libby upon the scroll…";
       input.focus();
       break;
     case "token":
       if (current) {
         current.classList.remove("thinking");
         current._raw += data.text;
-        current.innerHTML = render(current._raw);
+        inkAppend(current, data.text);
         log.scrollTop = log.scrollHeight;
       }
       break;
     case "done": {
-      const reply = tidy(data.text || current?._raw || "");
-      if (current) { current.classList.remove("thinking"); current.innerHTML = render(reply); }
-      history.push({ role: "assistant", content: reply });
+      // Correct any author mix-ups for books in the catalog before the reply settles on the page.
+      const checked = finalize(data.text || current?._raw || "", current?._lore);
+      if (current) { current.classList.remove("thinking"); current.innerHTML = render(checked.text); }
+      if (checked.unknown.length) addMarginNote(checked.unknown);
+      history.push({ role: "assistant", content: checked.text });
       history = history.slice(-MAX_HISTORY_MESSAGES);
       current = null;
       setBusy(false);
@@ -586,9 +1169,9 @@ worker.onmessage = ({ data }) => {
       if (!ready) {
         $("phase").textContent = "Something went astray: " + data.message;
         downloadBtn.disabled = false;
-        downloadBtn.textContent = "Try again";
+        $("download-label").textContent = "Try again";
       } else {
-        if (current) { current.classList.remove("thinking"); current.textContent = "Forgive me, the candle flickered and I lost my words. Could you ask again?"; }
+        if (current) { current.classList.remove("thinking"); current.textContent = "Forgive me, the candle flickered and I lost my words. Could you write again?"; }
         if (history.at(-1)?.role === "user") history.pop();
         current = null;
         setBusy(false);
@@ -599,10 +1182,10 @@ worker.onmessage = ({ data }) => {
 
 downloadBtn.onclick = async () => {
   downloadBtn.disabled = true;
-  downloadBtn.textContent = "Waking Libby…";
-  $("progress").classList.add("on");
+  $("download-label").textContent = "Breaking the seal…";
+  $("progress").hidden = false;
   $("phase").textContent = "Gathering pages…";
-  // Ask the browser to keep the cached model around rather than evicting it under storage pressure.
+  // Ask the browser to keep the cached model rather than evicting it under storage pressure.
   try { await navigator.storage?.persist?.(); } catch {}
   worker.postMessage({ type: "load" });
 };
