@@ -40,6 +40,20 @@ Details:
 - **The writing:** visitors write on ruled lines in old print (IM Fell English). Libby answers in handwriting (Dancing Script) that soaks in like ink as the model writes.
 - **Day and night:** the table follows the visitor's light or dark setting. The scroll stays parchment in both.
 
+## Things to try
+
+- **Poke Libby's portrait.** She giggles, smiles and twitches an ear. Once awake, she opens her eyes, blinks, glances down while she writes, and smiles when she finds you a book.
+- **Click the things on the table:**
+  - the candle turns day into night
+  - the potion phial bubbles over and asks Libby for a surprise book
+  - the quill flicks ink across the table
+  - the flowers shed petals
+  - the brass key opens a hidden drawer of secrets, some drawn from your database
+- **Play "guess the book".** Write "play" or tap the suggestion. Libby hides a well-known book from the database and gives three clues: its tropes, the shape of its title, then its author's initials. Guessing on the first clue earns 3 gold stars, the second 2, the third 1. It needs no model, so you can play while Libby downloads. Your stars are remembered in this browser.
+- **Turn on sound** with the speaker button. Pages rustle, the quill scratches as she writes, and chimes ring when the seal breaks or you guess right. Every sound is synthesised in the browser, with no audio files. Sound is off until you turn it on.
+
+Sparkles and wiggles respect the "reduce motion" setting.
+
 ## Books: the gameofbooks database
 
 Libby's library is `books/fantasy_novels.json`, a copy of the database from the [gameofbooks](https://github.com/louisesoaresucf/gameofbooks) recommendation game: 574 books and series from Wikipedia's *List of fantasy novels*, each with authors and trope tags. gameofbooks is the source of truth and is left unchanged. To update Libby after editing the database there:
