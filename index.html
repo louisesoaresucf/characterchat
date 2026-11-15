@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Libby the Book Elf</title>
+<meta name="description" content="Chat with Libraria (Libby), a book elf who knows fantasy literature. The language model runs entirely in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5eedf;
+    --bg-glow: #e9dcf7;
+    --panel: #fffaf0;
+    --panel-edge: #e2d4b8;
+    --ink: #2c2541;
+    --ink-soft: #625a78;
+    --accent: #6a52c4;
+    --accent-ink: #ffffff;
+    --gold: #a8741c;
+    --libby-bubble: #f3ead6;
+    --libby-edge: #dcc9a0;
+    --user-bubble: #e6e0fa;
+    --user-edge: #c9bdf2;
+    --track: #e8dfcc;
+    --mote: rgba(168, 116, 28, .35);
+    --shadow: 0 10px 40px rgba(60, 40, 90, .12);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12101f;
+      --bg-glow: #2a2150;
+      --panel: #1b1830;
+      --panel-edge: #342d55;
+      --ink: #efe7d6;
+      --ink-soft: #a9a0c4;
+      --accent: #b6a3ff;
+      --accent-ink: #17132b;
+      --gold: #f0c674;
+      --libby-bubble: #262040;
+      --libby-edge: #463b72;
+      --user-bubble: #2f2a22;
+      --user-edge: #5a4c33;
+      --track: #2b2546;
+      --mote: rgba(240, 198, 116, .45);
+      --shadow: 0 10px 50px rgba(0, 0, 0, .45);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12101f; --bg-glow: #2a2150; --panel: #1b1830; --panel-edge: #342d55;
+    --ink: #efe7d6; --ink-soft: #a9a0c4; --accent: #b6a3ff; --accent-ink: #17132b;
+    --gold: #f0c674; --libby-bubble: #262040; --libby-edge: #463b72;
+    --user-bubble: #2f2a22; --user-edge: #5a4c33; --track: #2b2546;
+    --mote: rgba(240, 198, 116, .45); --shadow: 0 10px 50px rgba(0, 0, 0, .45);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    background: radial-gradient(1200px 600px at 50% -10%, var(--bg-glow), transparent 70%), var(--bg);
+    color: var(--ink);
+    font: 16px/1.55 "Nunito Sans", system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  .serif { font-family: "Cormorant Garamond", Georgia, serif; }
+
+  /* Drifting motes of light */
+  .motes { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+  .motes span {
+    position: absolute; bottom: -10px; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--mote); box-shadow: 0 0 12px var(--mote);
+    animation: drift linear infinite;
+  }
+  @keyframes drift {
+    from { transform: translateY(0) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    to { transform: translateY(-105vh) translateX(40px); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .motes { display: none; } }
+
+  main {
+    position: relative; z-index: 1;
+    max-width: 760px; margin: 0 auto; padding: 28px 16px 40px;
+    display: grid; gap: 18px;
+  }
+
+  header { display: flex; align-items: center; gap: 14px; }
+  .sigil { width: 56px; height: 56px; flex: none; filter: drop-shadow(0 0 10px var(--mote)); }
+  h1 { margin: 0; font-size: clamp(30px, 6vw, 40px); font-weight: 600; line-height: 1.05; }
+  .tagline { margin: 2px 0 0; color: var(--ink-soft); font-style: italic; font-family: "Cormorant Garamond", Georgia, serif; font-size: 19px; }
+  .theme-toggle {
+    margin-left: auto; background: none; border: 1px solid var(--panel-edge); color: var(--ink-soft);
+    border-radius: 999px; width: 38px; height: 38px; cursor: pointer; font-size: 17px;
+  }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 18px;
+    box-shadow: var(--shadow); padding: 18px 20px;
+  }
+
+  /* Download panel */
+  #setup h2 { margin: 0 0 6px; font-size: 24px; font-weight: 600; }
+  #setup p { margin: 0 0 10px; }
+  .note { color: var(--ink-soft); font-size: 14.5px; }
+  .note strong { color: var(--ink); font-weight: 600; }
+  .setup-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft);
+    border: 1px solid var(--panel-edge); border-radius: 999px; padding: 3px 10px;
+  }
+  .badge i { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); display: inline-block; }
+
+  button.primary {
+    font: 600 15px "Nunito Sans", system-ui, sans-serif;
+    background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px;
+    padding: 11px 22px; cursor: pointer; box-shadow: 0 0 0 0 var(--accent);
+    transition: transform .15s ease, box-shadow .3s ease, opacity .2s;
+  }
+  button.primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 0 22px -4px var(--accent); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+
+  .progress { margin-top: 14px; display: none; }
+  .progress.on { display: block; }
+  .bar { height: 12px; border-radius: 999px; background: var(--track); overflow: hidden; border: 1px solid var(--panel-edge); }
+  .fill {
+    height: 100%; width: 0%; border-radius: inherit;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    background-size: 200% 100%; animation: shimmer 2.4s linear infinite;
+    transition: width .25s ease;
+  }
+  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: 0 0; } }
+  .progress-label { display: flex; justify-content: space-between; gap: 12px; margin-top: 6px; font-size: 13.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
+  /* Chat */
+  #chat { display: grid; grid-template-rows: auto 1fr auto; padding: 0; overflow: hidden; }
+  .chat-head {
+    display: flex; align-items: center; gap: 10px; padding: 12px 18px;
+    border-bottom: 1px solid var(--panel-edge);
+  }
+  .chat-head .who { font-family: "Cormorant Garamond", Georgia, serif; font-size: 21px; font-weight: 600; }
+  .chat-head .status { font-size: 13px; color: var(--ink-soft); }
+  .chat-head button {
+    margin-left: auto; background: none; border: 1px solid var(--panel-edge); color: var(--ink-soft);
+    border-radius: 999px; padding: 5px 12px; font: 13px "Nunito Sans", sans-serif; cursor: pointer;
+  }
+  #log {
+    height: min(58vh, 520px); overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 14px;
+    scroll-behavior: smooth;
+  }
+  .msg { max-width: 86%; padding: 11px 15px; border-radius: 16px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .msg.libby {
+    align-self: flex-start; background: var(--libby-bubble); border: 1px solid var(--libby-edge);
+    border-top-left-radius: 4px;
+    font-family: "Cormorant Garamond", Georgia, serif; font-size: 19px; line-height: 1.45;
+    box-shadow: 0 0 24px -12px var(--gold);
+  }
+  .msg.user {
+    align-self: flex-end; background: var(--user-bubble); border: 1px solid var(--user-edge);
+    border-top-right-radius: 4px;
+  }
+  .msg em { color: var(--gold); font-style: italic; }
+  .msg.thinking::after { content: "✦"; display: inline-block; margin-left: 4px; color: var(--gold); animation: twinkle 1s ease-in-out infinite; }
+  @keyframes twinkle { 50% { opacity: .2; transform: scale(.7); } }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 10px; }
+  .chips button {
+    background: none; border: 1px dashed var(--libby-edge); color: var(--ink-soft); border-radius: 999px;
+    padding: 5px 12px; font: 13.5px "Nunito Sans", sans-serif; cursor: pointer;
+  }
+  .chips button:hover:not(:disabled) { color: var(--ink); border-style: solid; }
+
+  form { display: flex; gap: 10px; padding: 12px 14px 14px; border-top: 1px solid var(--panel-edge); }
+  textarea {
+    flex: 1; resize: none; min-height: 46px; max-height: 140px; padding: 11px 14px;
+    font: 15.5px/1.4 "Nunito Sans", system-ui, sans-serif; color: var(--ink);
+    background: var(--bg); border: 1px solid var(--panel-edge); border-radius: 14px;
+  }
+  textarea:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  form button.primary { padding: 0 20px; }
+
+  .memory { font-size: 12.5px; color: var(--ink-soft); text-align: center; margin: 0; }
+
+  @media (max-width: 520px) {
+    .card { padding: 16px; }
+    .msg { max-width: 94%; }
+    #log { height: 56vh; padding: 14px; }
+    .sigil { width: 46px; height: 46px; }
+  }
+</style>
+</head>
+<body>
+<div class="motes" aria-hidden="true"></div>
+
+<main>
+  <header>
+    <svg class="sigil" viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <radialGradient id="glow" cx="50%" cy="40%" r="50%">
+          <stop offset="0" stop-color="#f0c674" stop-opacity=".9"/>
+          <stop offset="1" stop-color="#f0c674" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <circle cx="32" cy="26" r="22" fill="url(#glow)"/>
+      <path d="M8 44c8-4 16-4 24 2 8-6 16-6 24-2V22c-8-4-16-4-24 2-8-6-16-6-24-2z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" style="color:var(--accent)"/>
+      <path d="M32 24v22" stroke="currentColor" stroke-width="2" style="color:var(--accent)"/>
+      <path d="M32 6l2.2 5.3L40 12l-4.5 3.6L37 21l-5-3-5 3 1.5-5.4L24 12l5.8-.7z" fill="#f0c674"/>
+    </svg>
+    <div>
+      <h1 class="serif">Libraria</h1>
+      <p class="tagline">a book elf of the enchanted stacks · call her Libby</p>
+    </div>
+    <button class="theme-toggle" id="theme" title="Toggle light / dark" aria-label="Toggle light or dark theme">☾</button>
+  </header>
+
+  <section class="card" id="setup">
+    <h2 class="serif">Wake Libby</h2>
+    <p class="note">
+      Libby's mind is a small language model. Your browser <strong>downloads it once</strong>
+      (<span id="size">about 500&nbsp;MB</span>) and keeps it in its cache. After that she
+      <strong>runs entirely on your device</strong>: no server, no account, and nothing you write ever leaves this page.
+      Later visits wake her straight from the cache, with no download.
+    </p>
+    <div class="setup-row">
+      <button class="primary" id="download" disabled>Checking your device…</button>
+      <span class="badge" id="backend"><i></i>detecting…</span>
+    </div>
+    <div class="progress" id="progress" aria-live="polite">
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="bar"><div class="fill" id="fill"></div></div>
+      <div class="progress-label"><span id="phase">Gathering pages…</span><span id="amount"></span></div>
+    </div>
+  </section>
+
+  <section class="card" id="chat" aria-label="Chat with Libby">
+    <div class="chat-head">
+      <span class="who">Libby</span>
+      <span class="status" id="status">asleep</span>
+      <button id="reset" type="button" disabled>New tale</button>
+    </div>
+    <div id="log" role="log" aria-live="polite"></div>
+    <div class="chips" id="chips">
+      <button type="button" disabled>Something with dragons?</button>
+      <button type="button" disabled>A cozy, funny book, please</button>
+      <button type="button" disabled>I loved The Hobbit. What next?</button>
+    </div>
+    <form id="form">
+      <textarea id="input" rows="1" placeholder="Wake Libby first…" disabled aria-label="Your message"></textarea>
+      <button class="primary" id="send" disabled>Send</button>
+    </form>
+  </section>
+
+  <p class="memory">Libby only remembers your last few exchanges. Small models can misremember books, so check a title before you buy it.</p>
+</main>
+
+<!-- ───────────────────────── Model worker ─────────────────────────
+     Runs in a module Web Worker (built from this script's text) so the page stays smooth. -->
+<script type="text/plain" id="worker-src">
+import {
+  pipeline, TextStreamer, InterruptableStoppingCriteria, ModelRegistry,
+} from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.2/dist/transformers.min.js";
+
+// WebGPU: LFM2-700M, the smallest model that reliably holds Libby's voice.
+// WASM (no WebGPU): onnxruntime-web's CPU build can't run LFM2's quantized embedding
+// (GatherBlockQuantized), so the fallback is SmolLM2-360M in 8-bit, which uses standard ops.
+const WEBGPU_MODEL = "onnx-community/LFM2-700M-ONNX";
+const WASM = { device: "wasm", dtype: "quantized", model: "HuggingFaceTB/SmolLM2-360M-Instruct" };
+// SmolLM2 tends to repeat its previous answer at low temperature, so it gets a little more freedom.
+const SAMPLING = {
+  webgpu: { temperature: 0.4, top_p: 0.9, repetition_penalty: 1.05 },
+  wasm: { temperature: 0.6, top_p: 0.9, repetition_penalty: 1.15 },
+};
+const TASK = "text-generation";
+const MAX_PROMPT_TOKENS = 1800;   // system prompt (~560) + example + a few short turns
+
+let generator = null;
+let backend = null;
+const stopper = new InterruptableStoppingCriteria();
+
+async function detectBackend() {
+  if (navigator.gpu) {
+    try {
+      const adapter = await navigator.gpu.requestAdapter();
+      if (adapter) {
+        // 4-bit weights + fp16 compute where the GPU supports it, else 4-bit weights + fp32.
+        return { device: "webgpu", dtype: adapter.features.has("shader-f16") ? "q4f16" : "q4", model: WEBGPU_MODEL };
+      }
+    } catch { /* fall through to WASM */ }
+  }
+  return WASM;
+}
+
+async function isCached(b) {
+  try { return await ModelRegistry.is_pipeline_cached(TASK, b.model, { device: b.device, dtype: b.dtype }); }
+  catch { return false; }
+}
+
+async function load(b) {
+  generator = await pipeline(TASK, b.model, {
+    device: b.device,
+    dtype: b.dtype,
+    progress_callback: (p) => {
+      if (p.status === "progress_total") {
+        self.postMessage({ type: "progress", loaded: p.loaded, total: p.total, progress: p.progress });
+      }
+    },
+  });
+  self.postMessage({ type: "phase", text: "Libby is stretching her wings…" });
+  // Warm-up: compiles GPU shaders / initialises kernels so the first reply is quick.
+  await generator([{ role: "user", content: "Hi" }], { max_new_tokens: 1 });
+}
+
+function trimToBudget(system, example, history) {
+  const tok = generator.tokenizer;
+  let h = history.slice();
+  const count = (msgs) =>
+    tok.apply_chat_template(msgs, { add_generation_prompt: true, tokenize: true, return_tensor: false, return_dict: false }).length;
+  while (h.length > 1 && count([system, ...example, ...h]) > MAX_PROMPT_TOKENS) h = h.slice(2);
+  return [system, ...example, ...h];
+}
+
+self.onmessage = async ({ data }) => {
+  try {
+    if (data.type === "check") {
+      backend = await detectBackend();
+      self.postMessage({ type: "backend", ...backend, cached: await isCached(backend) });
+    }
+
+    if (data.type === "load") {
+      try {
+        await load(backend);
+      } catch (err) {
+        if (backend.device !== "webgpu") throw err;
+        // Some GPUs/drivers can't run every operator: retry on the CPU (WASM).
+        console.warn("WebGPU failed, falling back to WASM:", err);
+        backend = WASM;
+        self.postMessage({ type: "backend", ...backend, cached: await isCached(backend), fallback: true });
+        await load(backend);
+      }
+      self.postMessage({ type: "ready", ...backend });
+    }
+
+    if (data.type === "generate") {
+      stopper.reset();
+      const messages = trimToBudget(data.system, data.example, data.history);
+      const streamer = new TextStreamer(generator.tokenizer, {
+        skip_prompt: true,
+        skip_special_tokens: true,
+        callback_function: (text) => self.postMessage({ type: "token", text }),
+      });
+      const out = await generator(messages, {
+        max_new_tokens: data.maxNewTokens,
+        do_sample: true,
+        ...SAMPLING[backend.device],
+        streamer,
+        stopping_criteria: stopper,
+      });
+      self.postMessage({ type: "done", text: out[0].generated_text.at(-1).content });
+    }
+
+    if (data.type === "interrupt") stopper.interrupt();
+  } catch (err) {
+    self.postMessage({ type: "error", message: String(err?.message || err) });
+  }
+};
+</script>
+
+<script type="module">
+// ───────────────────────── Character ─────────────────────────
+// Libby's persona plus a small "shelf" of real books. Grounding a small model with a short
+// list of facts keeps it from inventing titles and authors.
+const SYSTEM_PROMPT = `You are Libraria, a book elf whom friends call Libby. You dwell among the shelves of an enchanted library.
+Voice: ethereal, gentle and friendly, with soft images of candlelight, ink and rustling pages. Always stay Libby.
+Reply in two or three sentences. Never write lists, code or long stories.
+You only know books. If asked about anything else (cars, code, health, news), say it is beyond your shelves and offer a book instead.
+When asked for a book, recommend one from your shelf and name its author. If you do not know something, say so softly; never invent titles or authors.
+
+Your shelf:
+- The Hobbit by J.R.R. Tolkien (adventure): Bilbo joins thirteen dwarves to face the dragon Smaug.
+- The Lord of the Rings by J.R.R. Tolkien (epic): Frodo carries the One Ring to Mount Doom.
+- A Wizard of Earthsea by Ursula K. Le Guin (quiet, wise): the young wizard Ged must face the shadow he unleashed.
+- The Name of the Wind by Patrick Rothfuss (lyrical): Kvothe tells his own legend.
+- Mistborn: The Final Empire by Brandon Sanderson (heist, clever magic): Vin learns to burn metals to fight the Lord Ruler.
+- The Fifth Season by N.K. Jemisin (bold, dark): orogenes in a world of endless quakes.
+- Assassin's Apprentice by Robin Hobb (emotional): FitzChivalry trains as a royal assassin.
+- The Eye of the World by Robert Jordan (epic): the first turn of The Wheel of Time.
+- Guards! Guards! by Terry Pratchett (funny, cozy): the Night Watch of Ankh-Morpork versus a dragon.
+- The Lion, the Witch and the Wardrobe by C.S. Lewis (classic): four children step through a wardrobe into Narnia.
+- Northern Lights by Philip Pullman (wondrous): Lyra and her daemon journey north.
+- Uprooted by Naomi Novik (fairy tale): Agnieszka and the wizard called the Dragon face the Wood.
+- The Last Unicorn by Peter S. Beagle (bittersweet): a unicorn seeks the rest of her kind.
+- Howl's Moving Castle by Diana Wynne Jones (funny, cozy): Sophie, cursed to be old, bargains with a fire demon.
+- Piranesi by Susanna Clarke (strange, gentle): a man lives in an endless house of statues and tides.`;
+
+// One example exchange anchors her tone and reply length.
+const EXAMPLE = [
+  { role: "user", content: "Do you have something with dragons?" },
+  { role: "assistant", content: "Oh, dragons! The pages rustle at the very word. Try The Hobbit by J.R.R. Tolkien, where Bilbo creeps into the lair of Smaug, all gold and smoke and candle-glow. Shall I find you another?" },
+];
+
+const GREETING = "Welcome, wanderer, to the quiet between the shelves. I am Libraria, though friends call me Libby. Tell me what kind of tale your heart is hungry for, and I'll find you a book.";
+
+const MAX_HISTORY_MESSAGES = 6;   // last 3 exchanges; older ones fade like candle smoke
+const MAX_NEW_TOKENS = 128;
+// Total download per variant (weights + tokenizer + config), measured on Hugging Face.
+const SIZES_MB = { q4f16: 500, q4: 563, quantized: 367 };
+
+// ───────────────────────── UI wiring ─────────────────────────
+const $ = (id) => document.getElementById(id);
+const log = $("log"), input = $("input"), send = $("send"), form = $("form");
+const downloadBtn = $("download"), resetBtn = $("reset"), statusEl = $("status");
+const chips = [...$("chips").querySelectorAll("button")];
+
+let history = [];
+let busy = false;
+let ready = false;
+let current = null;   // the Libby bubble being streamed into
+
+// Drifting motes
+const motes = document.querySelector(".motes");
+for (let i = 0; i < 18; i++) {
+  const s = document.createElement("span");
+  s.style.left = Math.random() * 100 + "%";
+  s.style.animationDuration = 14 + Math.random() * 16 + "s";
+  s.style.animationDelay = -Math.random() * 30 + "s";
+  const size = 3 + Math.random() * 5;
+  s.style.width = s.style.height = size + "px";
+  motes.appendChild(s);
+}
+
+// Theme toggle (remembered per browser when storage is available)
+const root = document.documentElement;
+const prefersDark = () => matchMedia("(prefers-color-scheme: dark)").matches;
+function applyTheme(t) {
+  if (t) root.dataset.theme = t; else delete root.dataset.theme;
+  const dark = t ? t === "dark" : prefersDark();
+  $("theme").textContent = dark ? "☀" : "☾";
+}
+try { applyTheme(localStorage.getItem("libby-theme")); } catch { applyTheme(null); }
+$("theme").onclick = () => {
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : prefersDark();
+  const next = dark ? "light" : "dark";
+  applyTheme(next);
+  try { localStorage.setItem("libby-theme", next); } catch {}
+};
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function render(text) {
+  // Allow *emphasis* for titles or soft stage directions; everything else is plain text.
+  return escapeHtml(text).replace(/\*\*?([^*\n]+)\*\*?/g, "<em>$1</em>");
+}
+function addMessage(who, text) {
+  const div = document.createElement("div");
+  div.className = "msg " + who;
+  div.innerHTML = render(text);
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  return div;
+}
+// If the reply was cut off by the token limit, end it on the last full sentence.
+function tidy(text) {
+  let t = text.trim();
+  if (!/[.!?…"”’)*~]$/.test(t)) {
+    const cut = Math.max(t.lastIndexOf(". "), t.lastIndexOf("! "), t.lastIndexOf("? "), t.lastIndexOf("… "));
+    if (cut > 40) t = t.slice(0, cut + 1);
+    else t += "…";
+  }
+  return t;
+}
+
+function setBusy(b) {
+  busy = b;
+  send.textContent = b ? "Hush" : "Send";
+  send.disabled = !ready;
+  input.disabled = !ready;
+  chips.forEach((c) => (c.disabled = !ready || b));
+  resetBtn.disabled = !ready || b;
+  statusEl.textContent = !ready ? "asleep" : b ? "turning pages…" : "awake";
+}
+
+function resetChat() {
+  history = [];
+  log.innerHTML = "";
+  addMessage("libby", GREETING);
+}
+
+function ask(text) {
+  text = text.trim();
+  if (!text || busy || !ready) return;
+  addMessage("user", text);
+  history.push({ role: "user", content: text });
+  history = history.slice(-MAX_HISTORY_MESSAGES);
+  current = addMessage("libby", "");
+  current.classList.add("thinking");
+  current._raw = "";
+  setBusy(true);
+  worker.postMessage({ type: "generate", system: { role: "system", content: SYSTEM_PROMPT }, example: EXAMPLE, history, maxNewTokens: MAX_NEW_TOKENS });
+}
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (busy) { worker.postMessage({ type: "interrupt" }); return; }
+  const text = input.value;
+  input.value = "";
+  input.style.height = "";
+  ask(text);
+});
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
+});
+input.addEventListener("input", () => {
+  input.style.height = "auto";
+  input.style.height = Math.min(input.scrollHeight, 140) + "px";
+});
+chips.forEach((c) => (c.onclick = () => ask(c.textContent)));
+resetBtn.onclick = resetChat;
+
+// ───────────────────────── Worker messages ─────────────────────────
+const worker = new Worker(
+  URL.createObjectURL(new Blob([$("worker-src").textContent], { type: "text/javascript" })),
+  { type: "module" },
+);
+
+const fmtMB = (bytes) => (bytes / 1e6).toFixed(0);
+
+worker.onmessage = ({ data }) => {
+  switch (data.type) {
+    case "backend": {
+      const gpu = data.device === "webgpu";
+      $("backend").innerHTML = `<i></i>${gpu ? "WebGPU: fast, on your graphics card" : "No WebGPU: a lighter Libby runs on your CPU"}`;
+      $("size").textContent = `about ${SIZES_MB[data.dtype]} MB`;
+      if (data.fallback) $("phase").textContent = "Your GPU couldn't host her; trying the CPU instead…";
+      if (!data.fallback) {
+        downloadBtn.disabled = false;
+        downloadBtn.textContent = data.cached
+          ? "Wake Libby (already on this device)"
+          : `Download model (${SIZES_MB[data.dtype]} MB)`;
+      }
+      break;
+    }
+    case "progress": {
+      const pct = Math.min(100, data.progress || 0);
+      $("fill").style.width = pct.toFixed(1) + "%";
+      $("bar").setAttribute("aria-valuenow", pct.toFixed(0));
+      $("phase").textContent = pct < 100 ? "Gathering pages…" : "Binding the book…";
+      $("amount").textContent = `${fmtMB(data.loaded)} / ${fmtMB(data.total)} MB · ${pct.toFixed(0)}%`;
+      break;
+    }
+    case "phase":
+      $("fill").style.width = "100%";
+      $("phase").textContent = data.text;
+      break;
+    case "ready":
+      ready = true;
+      $("phase").textContent = data.device === "webgpu" ? "Awake, running on your GPU." : "Awake, running on your CPU.";
+      downloadBtn.textContent = "Libby is awake ✦";
+      setBusy(false);
+      input.placeholder = "Ask Libby about a book…";
+      input.focus();
+      break;
+    case "token":
+      if (current) {
+        current.classList.remove("thinking");
+        current._raw += data.text;
+        current.innerHTML = render(current._raw);
+        log.scrollTop = log.scrollHeight;
+      }
+      break;
+    case "done": {
+      const reply = tidy(data.text || current?._raw || "");
+      if (current) { current.classList.remove("thinking"); current.innerHTML = render(reply); }
+      history.push({ role: "assistant", content: reply });
+      history = history.slice(-MAX_HISTORY_MESSAGES);
+      current = null;
+      setBusy(false);
+      input.focus();
+      break;
+    }
+    case "error":
+      console.error(data.message);
+      if (!ready) {
+        $("phase").textContent = "Something went astray: " + data.message;
+        downloadBtn.disabled = false;
+        downloadBtn.textContent = "Try again";
+      } else {
+        if (current) { current.classList.remove("thinking"); current.textContent = "Forgive me, the candle flickered and I lost my words. Could you ask again?"; }
+        if (history.at(-1)?.role === "user") history.pop();
+        current = null;
+        setBusy(false);
+      }
+      break;
+  }
+};
+
+downloadBtn.onclick = async () => {
+  downloadBtn.disabled = true;
+  downloadBtn.textContent = "Waking Libby…";
+  $("progress").classList.add("on");
+  $("phase").textContent = "Gathering pages…";
+  // Ask the browser to keep the cached model around rather than evicting it under storage pressure.
+  try { await navigator.storage?.persist?.(); } catch {}
+  worker.postMessage({ type: "load" });
+};
+
+resetChat();
+setBusy(false);
+worker.postMessage({ type: "check" });
+</script>
+</body>
+</html>
