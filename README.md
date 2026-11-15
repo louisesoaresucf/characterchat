@@ -28,24 +28,42 @@ LFM2 is released under the LFM Open License v1.0. Check its terms before you use
 
 ## Design
 
-Libby lives in an ancient scroll: wooden rollers, worn parchment and an ink-drawn portrait of her (an SVG, drawn by script with a fixed seed so she looks the same on every visit). Visitors write on ruled lines in old print (IM Fell English). Libby answers in handwriting (Dancing Script) that soaks into the page like ink as the model writes. The room around the scroll follows the visitor's light or dark setting, and the scroll stays parchment in both.
+Libby lives in an ancient scroll laid on an old oak table. A candle, a quill in its inkwell, dried lavender and roses, a glowing phial and a brass key sit around it. The scroll fills the window's height:
 
-## Book facts
+- **Wide screens:** Libby's portrait and the sealed letter sit beside the writing.
+- **Phones and tablets:** a compact header sits above the writing.
 
-Small models misremember books, so the page doesn't trust the model's memory for titles and authors:
+Details:
 
-1. **Catalog.** `CATALOG` holds about 100 real fantasy books, each with author, year, series and a one-line summary. Each message adds only the relevant entries to the prompt, which keeps the context short.
-2. **Picked in code.** When you ask for a book (by mood, by author or "like The Hobbit"), the page picks one from the catalog and starts Libby's reply with its true title and author. The model only continues in her voice. "Who wrote…?" answers are started the same way.
-3. **Checked afterwards.** `finalize()` corrects wrong authors and publication years for catalog books. It cuts the reply before any title that isn't in the catalog, and adds a margin note if one remains.
+- **The portrait:** a watercolour painted in SVG by script, with a fixed seed so it looks the same on every visit.
+- **The wake button:** a letter closed with a wax seal. Breaking the seal starts the download.
+- **The writing:** visitors write on ruled lines in old print (IM Fell English). Libby answers in handwriting (Dancing Script) that soaks in like ink as the model writes.
+- **Day and night:** the table follows the visitor's light or dark setting. The scroll stays parchment in both.
 
-Facts about what happens inside a book can still slip, especially in the lighter WASM model, so the page asks visitors to check a title before buying it.
+## Books: the gameofbooks database
+
+Libby's library is `books/fantasy_novels.json`, a copy of the database from the [gameofbooks](https://github.com/louisesoaresucf/gameofbooks) recommendation game: 574 books and series from Wikipedia's *List of fantasy novels*, each with authors and trope tags. gameofbooks is the source of truth and is left unchanged. To update Libby after editing the database there:
+
+```bash
+tools/sync-books.sh
+```
+
+You can pass a local checkout instead: `tools/sync-books.sh ../gameofbooks`.
+
+The database has no plot summaries, so Libby describes books only through their tropes. Small models misremember books, so the page doesn't trust the model's memory for titles and authors:
+
+1. **Facts per message.** Only the books relevant to your message go into the prompt.
+2. **Picked in code.** When you ask for a book (by mood, by author or "like The Hobbit"), the page chooses one by matching your words to the database's 29 tropes. Books marked `read` or `dnf` in your reading log are skipped. Libby's reply then starts with the true title and author, and the model only continues in her voice. "Who wrote…?" answers start the same way.
+3. **Checked afterwards.** Wrong authors are corrected. Anything after a title that isn't in the database is cut. Web links and rambling extra paragraphs are removed.
+
+Titles and authors are therefore reliable. Details about what happens inside a book can still be invented, especially by the lighter CPU model, so the page asks visitors to check a title before buying it. Books that aren't in the database are ones Libby says she doesn't know.
 
 ## Tuning
 
 Everything that shapes the character is in the main `<script>` in `index.html`:
 
-- `SYSTEM_PROMPT`: Libby's persona and rules.
-- `EXAMPLE`: one example exchange that anchors her tone and reply length.
-- `CATALOG`, `MOODS`: the books she knows and the moods she can match (funny, cozy, dragons, dark, wizards…). Add a book by adding a row.
+- `SYSTEM_PROMPT` and `EXAMPLE`: Libby's persona, her rules, and one example exchange that sets her tone and reply length.
+- `MOODS`: the words that map to each trope (funny → humor, dark → grimdark, and so on).
+- `STARTER_SHELF`: well-known books she offers when a message gives nothing to match on.
 - `MAX_HISTORY_MESSAGES` (6, the last 3 exchanges): how much conversation she remembers. The worker also trims the oldest turns if the prompt passes about 1,800 tokens.
-- `MAX_NEW_TOKENS` (128): the reply length cap. A reply cut off mid-sentence is trimmed back to its last full sentence.
+- `MAX_NEW_TOKENS` (100 on WebGPU, 72 on the CPU): the reply length cap. A reply cut off mid-sentence is trimmed back to its last full sentence.

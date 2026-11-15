@@ -4,19 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Libby the Book Elf</title>
-<meta name="description" content="Chat with Libraria (Libby), a book elf trapped in an enchanted scroll. The language model runs entirely in your browser.">
+<meta name="description" content="Chat with Libraria (Libby), a book elf bound in an enchanted scroll. The language model runs entirely in your browser.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
 <style>
-  /* Layout: a lit room → one hanging scroll (rollers top and bottom) → portrait, seal, writing. */
+  /* Layout: an old oak table fills the window; one scroll fills its height; magical clutter peeks out around it.
+     Inside the scroll: portrait + seal beside the writing on wide screens, a compact header above it on narrow ones. */
   :root {
-    /* The room around the scroll: a sunlit oak reading desk */
-    --room: #9a7149;
-    --room-grain: rgba(60, 32, 10, .07);
-    --room-glow: rgba(255, 232, 180, .55);
-    --room-fg: #fff4dc;
-    --room-fg-soft: rgba(255, 244, 220, .78);
+    /* The table (light: daylight across the oak; dark: night, lit by the candle) */
+    --table: #8b5e34;
+    --plank-seam: rgba(40, 18, 4, .38);
+    --daylight: rgba(255, 236, 196, .42);
+    --candle-glow: rgba(255, 196, 120, .22);
+    --table-vignette: rgba(36, 16, 4, .5);
+    --object-shadow: rgba(30, 12, 2, .45);
     --mote: rgba(255, 236, 190, .7);
 
     /* The scroll (a physical object, so it stays parchment in both themes) */
@@ -30,36 +32,65 @@
     --wood-dark: #36200d;
 
     /* Inks */
-    --ink: #2a1c10;            /* iron-gall ink: visitor's words, print */
+    --ink: #2a1c10;
     --ink-soft: #6a5236;
-    --libby-ink: #3e2560;      /* violet-sepia: Libby's handwriting */
+    --libby-ink: #3e2560;
     --libby-glow: rgba(160, 120, 235, .45);
     --gold-ink: #8d5c12;
-    --leaf: #6f7a3a;
     --seal: #8c1d19;
-    --seal-hi: #c4413a;
-    --seal-dark: #4d0b09;
+    --seal-hi: #d0574c;
+    --seal-dark: #4a0907;
+    --seal-glow: rgba(255, 120, 90, .55);
     --halo: rgba(190, 160, 255, .55);
-    --blush: rgba(214, 118, 134, .22);
-    --blush-deep: rgba(176, 72, 92, .45);
+
+    /* Watercolour palette for Libby and the objects on the table */
+    --p-skin: #f6e4d2;
+    --p-skin-shade: #d9a98f;
+    --p-blush: #e08f97;
+    --p-lip: #c25b6c;
+    --p-hair-1: #36203f;
+    --p-hair-2: #6b4560;
+    --p-hair-3: #c39a5b;
+    --p-lilac: #b9a1e6;
+    --p-gold: #d9a441;
+    --p-sage: #7f9468;
+    --p-rose: #d48a90;
+    --p-lavender: #8d74c4;
+    --p-brass: #b8862f;
+    --p-brass-hi: #f3d28a;
+    --p-brass-dark: #5e3d10;
+    --p-wax: #f3ead2;
+    --p-glass: rgba(200, 225, 240, .28);
+    --p-potion: #8f6be8;
+    --p-potion-2: #4fc7c0;
+    --p-flame: #ffcf6a;
+    --p-feather: #f4eee2;
 
     --f-title: "IM Fell English SC", "IM Fell English", Georgia, serif;
     --f-print: "IM Fell English", Georgia, "Times New Roman", serif;
     --f-hand: "Dancing Script", "Segoe Script", "Apple Chancery", cursive;
+
+    /* Sizing: the scroll fills the height; its width leaves room for the clutter on wide screens. */
+    --gap: clamp(6px, 1.6vh, 18px);
+    --side: 6px;
+    --scroll-w: min(calc(100vw - 2 * var(--side)), 1140px);
     color-scheme: light;
   }
+  @media (min-width: 600px) { :root { --side: 3vw; } }
+  @media (min-width: 1000px) { :root { --side: clamp(70px, 11vw, 240px); } }
+
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --room: #120c08; --room-grain: rgba(255, 210, 150, .025); --room-glow: rgba(255, 168, 70, .2);
-      --room-fg: #f3dfba; --room-fg-soft: rgba(243, 223, 186, .7); --mote: rgba(255, 190, 110, .6);
+      --table: #3b2513; --plank-seam: rgba(0, 0, 0, .55); --daylight: rgba(255, 236, 196, 0); --candle-glow: rgba(255, 168, 70, .42);
+      --table-vignette: rgba(4, 2, 0, .82); --object-shadow: rgba(0, 0, 0, .65); --mote: rgba(255, 190, 110, .6);
       --parch: #e6d2a7; --parch-deep: #c4a46c; --parch-burn: rgba(70, 36, 6, .55); --stain: rgba(130, 80, 20, .16);
       --halo: rgba(200, 170, 255, .65);
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --room: #120c08; --room-grain: rgba(255, 210, 150, .025); --room-glow: rgba(255, 168, 70, .2);
-    --room-fg: #f3dfba; --room-fg-soft: rgba(243, 223, 186, .7); --mote: rgba(255, 190, 110, .6);
+    --table: #3b2513; --plank-seam: rgba(0, 0, 0, .55); --daylight: rgba(255, 236, 196, 0); --candle-glow: rgba(255, 168, 70, .42);
+    --table-vignette: rgba(4, 2, 0, .82); --object-shadow: rgba(0, 0, 0, .65); --mote: rgba(255, 190, 110, .6);
     --parch: #e6d2a7; --parch-deep: #c4a46c; --parch-burn: rgba(70, 36, 6, .55); --stain: rgba(130, 80, 20, .16);
     --halo: rgba(200, 170, 255, .65);
     color-scheme: dark;
@@ -67,56 +98,61 @@
 
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
-  html, body { margin: 0; }
-  html { overflow-x: hidden; }
-  body {
-    min-height: 100vh;
-    color: var(--ink);
-    font: 18px/1.5 var(--f-print);
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+  body { color: var(--ink); font: 18px/1.5 var(--f-print); background: var(--table); }
+
+  /* ── The table ── */
+  .table {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
     background:
-      radial-gradient(900px 520px at 50% 6%, var(--room-glow), transparent 70%),
-      repeating-linear-gradient(91deg, var(--room-grain) 0 2px, transparent 2px 9px, var(--room-grain) 9px 10px, transparent 10px 23px),
-      var(--room);
-    overflow-x: hidden;
+      radial-gradient(circle at calc(50% + var(--scroll-w) / 2 + 70px) 12%, var(--candle-glow), transparent 32%),
+      linear-gradient(118deg, var(--daylight) 0%, transparent 46%),
+      radial-gradient(ellipse at 50% 50%, transparent 40%, var(--table-vignette) 100%),
+      repeating-linear-gradient(180deg, transparent 0 168px, var(--plank-seam) 168px 170px, rgba(255, 230, 190, .06) 170px 171px),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='340'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.0028 .085' numOctaves='4' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .05 0 0 0 0 .01 0 0 0 1.5 -.5'/%3E%3C/filter%3E%3Cfilter id='k'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .2' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .9 0 0 0 0 .75 0 0 0 .5 -.18'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3Crect width='100%25' height='100%25' filter='url(%23k)'/%3E%3C/svg%3E") 0 0 / 900px 340px,
+      var(--table);
   }
 
   /* Dust in the light / embers in the dark */
-  .motes { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
-  .motes span {
-    position: absolute; bottom: -10px; border-radius: 50%;
-    background: var(--mote); box-shadow: 0 0 10px var(--mote);
-    animation: drift linear infinite;
-  }
-  @keyframes drift {
-    from { transform: translate(0, 0); opacity: 0; }
-    12% { opacity: 1; }
-    to { transform: translate(36px, -105vh); opacity: 0; }
-  }
+  .motes { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 3; }
+  .motes span { position: absolute; bottom: -10px; border-radius: 50%; background: var(--mote); box-shadow: 0 0 10px var(--mote); animation: drift linear infinite; }
+  @keyframes drift { from { transform: translate(0, 0); opacity: 0; } 12% { opacity: 1; } to { transform: translate(36px, -105vh); opacity: 0; } }
 
-  main {
-    position: relative; z-index: 1;
-    max-width: 780px; margin: 0 auto;
-    padding-block: 18px 36px;
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
-    display: grid; gap: 14px;
-  }
-  .topbar { display: flex; justify-content: flex-end; }
-  .theme-toggle {
-    background: none; border: 1px solid var(--room-fg-soft); color: var(--room-fg);
-    border-radius: 999px; width: 38px; height: 38px; cursor: pointer; font: 18px var(--f-print);
-  }
+  /* ── Clutter on the table, placed against the scroll's edges ── */
+  .clutter { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+  .clutter svg { position: absolute; overflow: visible; filter: drop-shadow(6px 10px 8px var(--object-shadow)); }
+  .c-flowers { width: 310px; top: -18px; left: max(-46px, calc(50% - var(--scroll-w) / 2 - 270px)); }
+  .c-candle { width: 150px; top: 2vh; left: calc(50% + var(--scroll-w) / 2 - 8px); }
+  .c-ink { width: 230px; bottom: -6px; left: calc(50% + var(--scroll-w) / 2 - 40px); }
+  .c-phial { width: 110px; bottom: 5vh; left: calc(50% - var(--scroll-w) / 2 - 112px); }
+  .c-key { width: 170px; top: 52vh; left: calc(50% - var(--scroll-w) / 2 - 168px); }
+  .flame { transform-origin: 75px 92px; animation: flicker 2.8s ease-in-out infinite; }
+  .flame-glow { animation: glow 2.8s ease-in-out infinite; }
+  @keyframes flicker { 20% { transform: scale(.96, 1.04) skewX(2deg); } 45% { transform: scale(1.03, .97) skewX(-3deg); } 70% { transform: scale(.98, 1.05) skewX(1deg); } }
+  @keyframes glow { 50% { opacity: .75; } }
+  .glint { animation: twinkle 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 
   /* ── The scroll ── */
-  .scroll { padding-inline: 30px; filter: drop-shadow(0 18px 28px rgba(0, 0, 0, .35)); }
+  main {
+    position: relative; z-index: 2; height: 100%;
+    display: grid; place-items: center;
+    padding-block: var(--gap);
+    padding-left: max(var(--gap), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--gap), env(safe-area-inset-right, 0px));
+  }
+  .scroll {
+    width: var(--scroll-w); height: 100%; min-height: 0;
+    display: flex; flex-direction: column;
+    padding-inline: 30px;
+    filter: drop-shadow(0 18px 26px rgba(20, 8, 0, .45));
+  }
   .roller {
-    position: relative; height: 30px; margin: 0 -14px; border-radius: 15px; z-index: 2;
+    position: relative; flex: none; height: 30px; margin: 0 -14px; border-radius: 15px; z-index: 2;
     background: linear-gradient(180deg, var(--wood-hi) 0%, var(--wood) 38%, var(--wood-dark) 100%);
     box-shadow: inset 0 2px 2px rgba(255, 255, 255, .18);
   }
   .roller::before, .roller::after {
-    content: ""; position: absolute; top: 50%; width: 20px; height: 40px; border-radius: 42%;
-    transform: translateY(-50%);
+    content: ""; position: absolute; top: 50%; width: 20px; height: 40px; border-radius: 42%; transform: translateY(-50%);
     background: radial-gradient(circle at 38% 32%, var(--wood-hi), var(--wood) 45%, var(--wood-dark));
   }
   .roller::before { left: -16px; }
@@ -125,9 +161,9 @@
   .roller.bottom { margin-top: -8px; }
 
   .parchment {
-    position: relative; z-index: 1;
-    padding: 34px 44px 30px;
-    display: grid; gap: 18px;
+    position: relative; z-index: 1; flex: 1; min-height: 0;
+    container-type: inline-size;
+    padding: 26px 44px 18px;
     background:
       linear-gradient(180deg, rgba(60, 30, 5, .28), transparent 26px),
       linear-gradient(0deg, rgba(60, 30, 5, .28), transparent 26px),
@@ -137,7 +173,6 @@
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .2 0 0 0 0 .08 0 0 0 .5 0'/%3E%3C/filter%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.018' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .3 0 0 0 0 .1 0 0 0 .35 -.08'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='.4'/%3E%3C/svg%3E"),
       radial-gradient(ellipse at 50% 45%, var(--parch) 55%, var(--parch-deep) 100%);
     box-shadow: inset 0 0 70px var(--parch-burn);
-    /* Ragged, worn side edges */
     -webkit-mask:
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='64'%3E%3Cpath d='M14 0H5l2 6-4 6 3 7-3 6 4 7-5 6 3 7-2 7 4 6-3 6h10z'/%3E%3C/svg%3E") left top / 14px 64px repeat-y,
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='64'%3E%3Cpath d='M0 0h9l-3 5 4 7-2 7 3 6-4 7 3 6-2 7 4 7-3 6 2 6H0z'/%3E%3C/svg%3E") right top / 14px 64px repeat-y,
@@ -147,24 +182,96 @@
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='64'%3E%3Cpath d='M0 0h9l-3 5 4 7-2 7 3 6-4 7 3 6-2 7 4 7-3 6 2 6H0z'/%3E%3C/svg%3E") right top / 14px 64px repeat-y,
       linear-gradient(#000, #000) center / calc(100% - 26px) 100% no-repeat;
   }
+  .theme-toggle {
+    position: absolute; top: 14px; right: 26px; z-index: 2;
+    background: none; border: 1px solid var(--rule); color: var(--ink-soft);
+    border-radius: 999px; width: 34px; height: 34px; cursor: pointer; font: 17px var(--f-print);
+  }
 
-  /* ── Portrait ── */
-  .portrait { display: grid; justify-items: center; gap: 4px; text-align: center; }
-  .portrait svg { width: 190px; height: auto; max-width: 100%; overflow: visible; }
-  .p-line { fill: none; stroke: var(--ink); stroke-linecap: round; stroke-linejoin: round; }
-  .p-soft { fill: none; stroke: var(--ink-soft); stroke-linecap: round; }
-  .p-skin { fill: var(--parch); }
-  .p-hairwash { fill: var(--libby-ink); opacity: .12; }
-  .p-haircap { fill: var(--libby-ink); opacity: .2; }
-  .p-blush { fill: var(--blush); }
-  .p-lip { fill: var(--blush-deep); }
-  .p-strand.soft { stroke: var(--ink-soft); }
-  .p-strand.glint { stroke: var(--gold-ink); }
-  .p-strand { fill: none; stroke: var(--ink); stroke-linecap: round; }
-  .p-strand.lit { stroke: var(--libby-ink); }
-  .p-gold { fill: var(--gold-ink); }
-  .p-leaf { fill: var(--leaf); opacity: .8; }
-  .p-dress { fill: var(--libby-ink); opacity: .1; }
+  /* One column: compact header, then the writing fills the rest. */
+  .sheet { height: 100%; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 12px; }
+  .side { display: grid; gap: 10px; align-content: start; min-height: 0; }
+  .portrait { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 14px; padding-right: 40px; }
+  .portrait svg { grid-row: span 3; width: clamp(72px, 15cqi, 124px); height: auto; overflow: visible; }
+  h1 { margin: 0; font: 400 30px/1 var(--f-title); letter-spacing: .04em; text-wrap: balance; }
+  .epithet { margin: 0; font-style: italic; color: var(--ink-soft); font-size: 15.5px; }
+  #status { margin: 0; font: 21px/1.2 var(--f-hand); color: var(--libby-ink); text-shadow: 0 0 8px var(--libby-glow); }
+  .flourish { display: none; width: min(260px, 80%); height: 18px; margin: 0 auto; color: var(--ink-soft); }
+
+  /* Two columns once the scroll is wide enough: Libby beside the writing. */
+  @container (min-width: 760px) {
+    .sheet { grid-template-columns: minmax(250px, 31%) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 30px; }
+    .side { align-content: center; padding-right: 26px; border-right: 1px solid var(--rule); overflow-y: auto; }
+    .portrait { grid-template-columns: 1fr; justify-items: center; text-align: center; row-gap: 4px; padding-right: 0; }
+    .portrait svg { grid-row: auto; width: min(210px, 100%); }
+    h1 { font-size: clamp(34px, 3.6cqi, 46px); margin-top: 6px; }
+    .epithet { font-size: 17px; }
+    #status { font-size: 24px; }
+    .flourish { display: block; }
+    #note { text-align: center; }
+  }
+  @media (max-height: 640px) { @container (min-width: 760px) { .portrait svg { width: 130px; } } }
+
+  /* One column: a compact letter beside its label, and the suggestions in one swipeable row. */
+  @container (max-width: 759px) {
+    .sheet #setup { justify-items: stretch; gap: 6px; }
+    .sheet #note { font-size: 15px; }
+    .sheet #status { font-size: 19px; }
+    .sheet .epithet { font-size: 14.5px; }
+    .sheet .letter { grid-template-columns: auto 1fr; column-gap: 14px; justify-items: start; align-items: center; text-align: left; padding: 4px 0; }
+    .sheet .letter .envelope { grid-row: span 2; width: 92px; height: 60px; }
+    .sheet .letter .seal { width: 40px; height: 40px; }
+    .sheet .letter-lead { font-size: 18px; align-self: end; }
+    .sheet .letter-small { align-self: start; }
+    .sheet #backend { font-size: 14px; text-align: left; }
+    .sheet .chips { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; scrollbar-width: none; padding-bottom: 2px; }
+    .sheet .chips::-webkit-scrollbar { display: none; }
+    .sheet .chips button { white-space: nowrap; }
+  }
+
+  /* ── The sealed letter (download) ── */
+  #setup { display: grid; gap: 10px; justify-items: center; }
+  #note { margin: 0; font-size: 16px; line-height: 1.5; max-width: 60ch; }
+  #note b { font-weight: 400; font-style: italic; color: var(--seal); }
+  .letter {
+    display: grid; justify-items: center; gap: 6px; padding: 6px 10px; margin: 0;
+    background: none; border: 0; color: var(--ink); cursor: pointer; font: inherit; border-radius: 10px;
+  }
+  .envelope { position: relative; width: 150px; height: 98px; }
+  .envelope .env { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(2px 6px 6px rgba(70, 35, 5, .35)); }
+  .env-body { fill: var(--parch); stroke: var(--ink-soft); stroke-width: .7; }
+  .env-fold { fill: none; stroke: var(--ink-soft); stroke-width: .6; opacity: .7; }
+  .env-flap { fill: var(--parch-deep); stroke: var(--ink-soft); stroke-width: .7; transform-box: view-box; transform-origin: 100px 6px; }
+  .seal { position: absolute; left: 50%; top: 56%; width: 60px; height: 60px; transform: translate(-50%, -50%); transition: transform .25s ease, filter .25s ease; }
+  .seal svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .seal .half-l, .seal .half-r { visibility: hidden; }
+  .letter.broken .half-l, .letter.broken .half-r { visibility: visible; }
+  .letter.broken .whole { visibility: hidden; }
+  .seal .half-l { clip-path: polygon(0 0, 53% 0, 45% 33%, 57% 58%, 47% 100%, 0 100%); }
+  .seal .half-r { clip-path: polygon(53% 0, 100% 0, 100% 100%, 47% 100%, 57% 58%, 45% 33%); }
+  .letter:hover:not(:disabled) .seal, .letter:focus-visible .seal { transform: translate(-50%, -50%) rotate(-7deg) scale(1.07); filter: drop-shadow(0 0 9px var(--seal-glow)); }
+  .letter-lead { font: 20px/1.2 var(--f-title); }
+  .letter-small { font-size: 15px; font-style: italic; color: var(--ink-soft); }
+  .letter:disabled { cursor: default; }
+  .letter:disabled:not(.broken) .seal { filter: saturate(.55); }
+  .letter.broken .half-l { animation: crack-l .9s ease-in forwards; }
+  .letter.broken .half-r { animation: crack-r .9s ease-in forwards; }
+  .letter.broken .env-flap { animation: flap-open .5s .3s ease-out forwards; }
+  .letter.broken { animation: letter-out .45s .85s ease forwards; }
+  @keyframes crack-l { 25% { transform: translate(-2px, 0) rotate(-6deg); } to { transform: translate(-30px, 46px) rotate(-48deg); opacity: 0; } }
+  @keyframes crack-r { 25% { transform: translate(2px, 0) rotate(6deg); } to { transform: translate(30px, 50px) rotate(52deg); opacity: 0; } }
+  @keyframes flap-open { to { transform: scaleY(-1); } }
+  @keyframes letter-out { to { opacity: 0; transform: translateY(-6px) scale(.97); } }
+  #backend { font-style: italic; color: var(--ink-soft); font-size: 15px; text-align: center; }
+
+  #progress { display: grid; gap: 4px; padding-top: 18px; width: 100%; }
+  .inkline { position: relative; height: 4px; border-radius: 2px; background: repeating-linear-gradient(90deg, var(--rule) 0 6px, transparent 6px 11px); }
+  #fill { position: absolute; inset: 0 auto 0 0; width: 0%; border-radius: 3px 1px 2px 3px; background: linear-gradient(90deg, var(--ink) 0%, var(--libby-ink) 100%); transition: width .3s ease; }
+  .quill { position: absolute; left: 0%; bottom: 1px; width: 26px; height: 30px; transform: translateX(-4px); transition: left .3s ease; color: var(--ink); }
+  .progress-label { display: flex; justify-content: space-between; gap: 12px; font-size: 14.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  #phase { font-style: italic; }
+
+  /* ── Portrait (watercolour) ── */
   .halo-stop-a { stop-color: var(--halo); }
   .halo-stop-b { stop-color: var(--halo); stop-opacity: 0; }
   .halo { transform-origin: 100px 110px; }
@@ -172,67 +279,19 @@
   @keyframes breathe { 50% { opacity: .45; transform: scale(1.06); } }
   .sparkle { fill: var(--gold-ink); animation: twinkle 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
   @keyframes twinkle { 50% { opacity: .15; transform: scale(.6); } }
-
-  h1 { margin: 6px 0 0; font: 400 clamp(34px, 7vw, 46px)/1 var(--f-title); letter-spacing: .04em; text-wrap: balance; }
-  .epithet { margin: 0; font-style: italic; color: var(--ink-soft); font-size: 18px; }
-  #status { margin: 2px 0 0; font: 24px/1.2 var(--f-hand); color: var(--libby-ink); text-shadow: 0 0 8px var(--libby-glow); }
-
-  /* ── Ornamental rule ── */
-  .flourish { display: block; width: min(320px, 80%); height: 18px; margin: 0 auto; color: var(--ink-soft); }
-
-  /* ── The seal (download) ── */
-  #setup { display: grid; gap: 12px; }
-  #note { margin: 0; font-size: 17.5px; line-height: 1.55; max-width: 60ch; justify-self: center; text-align: center; }
-  #note b { font-weight: 400; font-style: italic; color: var(--seal); }
-  .seal-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 18px; }
-  .seal-btn {
-    display: inline-flex; align-items: center; gap: 12px; padding: 0; background: none; border: 0;
-    font: 21px var(--f-title); color: var(--ink); cursor: pointer; text-align: left;
-  }
-  .wax {
-    width: 60px; height: 60px; flex: none; display: grid; place-items: center;
-    border-radius: 47% 53% 50% 50% / 52% 46% 54% 48%;
-    background: radial-gradient(circle at 36% 30%, var(--seal-hi), var(--seal) 52%, var(--seal-dark));
-    box-shadow: 0 0 0 4px rgba(140, 29, 25, .25), 2px 4px 8px rgba(40, 10, 0, .4), inset -3px -4px 6px rgba(0, 0, 0, .3);
-    color: rgba(255, 220, 200, .55); font: 30px/1 var(--f-title);
-    text-shadow: -1px -1px 0 rgba(0, 0, 0, .35), 1px 1px 0 rgba(255, 180, 160, .25);
-    transition: transform .2s ease;
-  }
-  .seal-btn:hover:not(:disabled) .wax { transform: rotate(-8deg) scale(1.05); }
-  .seal-btn .label { border-bottom: 1px solid var(--rule); }
-  .seal-btn:disabled { cursor: default; }
-  .seal-btn:disabled .wax { filter: saturate(.6); }
-  #backend { font-style: italic; color: var(--ink-soft); font-size: 16px; }
-
-  #progress { display: grid; gap: 4px; padding-top: 18px; }
-  .inkline { position: relative; height: 4px; border-radius: 2px; background: repeating-linear-gradient(90deg, var(--rule) 0 6px, transparent 6px 11px); }
-  #fill {
-    position: absolute; inset: 0 auto 0 0; width: 0%; border-radius: 3px 1px 2px 3px;
-    background: linear-gradient(90deg, var(--ink) 0%, var(--libby-ink) 100%);
-    transition: width .3s ease;
-  }
-  .quill { position: absolute; left: 0%; bottom: 1px; width: 26px; height: 30px; transform: translateX(-4px); transition: left .3s ease; color: var(--ink); }
-  .progress-label { display: flex; justify-content: space-between; gap: 12px; font-size: 15.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
-  #phase { font-style: italic; }
+  .p-frame { fill: none; stroke: var(--ink); stroke-width: 1.4; }
+  .p-frame-2 { fill: none; stroke: var(--ink-soft); stroke-width: .6; }
 
   /* ── The writing ── */
-  #chat { display: grid; gap: 10px; }
+  #chat { min-height: 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
   #log {
-    height: min(48vh, 460px); overflow-y: auto; padding: 18px 4px 6px;
+    flex: 1; min-height: 0; overflow-y: auto; padding: 14px 4px 6px;
     display: flex; flex-direction: column; gap: 16px;
-    -webkit-mask: linear-gradient(transparent, #000 26px); mask: linear-gradient(transparent, #000 26px);
+    -webkit-mask: linear-gradient(transparent, #000 24px); mask: linear-gradient(transparent, #000 24px);
   }
-  .msg { max-width: 90%; white-space: pre-wrap; overflow-wrap: anywhere; }
-  .msg.libby {
-    align-self: flex-start;
-    font: 500 25px/1.32 var(--f-hand); color: var(--libby-ink);
-    text-shadow: 0 0 7px var(--libby-glow);
-  }
-  .msg.user {
-    align-self: flex-end; max-width: 80%;
-    font: 18.5px/1.45 var(--f-print); color: var(--ink);
-    padding-left: 30px; position: relative;
-  }
+  .msg { max-width: 92%; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .msg.libby { align-self: flex-start; font: 500 25px/1.32 var(--f-hand); color: var(--libby-ink); text-shadow: 0 0 7px var(--libby-glow); }
+  .msg.user { align-self: flex-end; max-width: 80%; font: 18.5px/1.45 var(--f-print); color: var(--ink); padding-left: 30px; position: relative; }
   .msg.user::before {
     content: ""; position: absolute; left: 0; top: 2px; width: 20px; height: 20px; background: var(--ink-soft);
     -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M21 2C13 3 7 8 5 15l-2 7 2 .5 1.6-5.2C12 17 18 11 21 2zM7.2 14.6C9 10 12.4 6.6 17 4.6 14 8.2 10.8 11.6 7.2 14.6z'/%3E%3C/svg%3E") center / contain no-repeat;
@@ -240,203 +299,335 @@
   }
   .msg em { font-style: normal; color: var(--gold-ink); }
   .msg.user em { font-style: italic; }
+  .margin-note { margin: -6px 0 0; align-self: flex-start; max-width: 90%; font: italic 15px/1.4 var(--f-print); color: var(--seal); }
   .ink { animation: soak .7s ease-out both; }
   @keyframes soak { from { opacity: 0; filter: blur(3px); } to { opacity: 1; filter: blur(0); } }
   .msg.libby.thinking::after { content: "✦"; display: inline-block; color: var(--gold-ink); animation: twinkle 1.1s ease-in-out infinite; }
 
-  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; }
+  .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 18px; }
   .chips button, .linkish {
-    background: none; border: 0; padding: 2px 0; cursor: pointer;
-    font: italic 16.5px var(--f-print); color: var(--ink-soft);
+    background: none; border: 0; padding: 2px 0; cursor: pointer; font: italic 16px var(--f-print); color: var(--ink-soft);
     text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 4px;
   }
   .chips button:hover:not(:disabled), .linkish:hover:not(:disabled) { color: var(--libby-ink); text-decoration-color: currentColor; }
-
   form { display: flex; align-items: flex-end; gap: 14px; }
   textarea {
     flex: 1; min-width: 0; resize: none; border: 0; border-radius: 0; padding: 0 4px; margin: 0;
-    height: 72px; max-height: 144px;
-    font: 19px/36px var(--f-print); color: var(--ink);
-    background: repeating-linear-gradient(180deg, transparent 0 35px, var(--rule) 35px 36px);
-    background-attachment: local;
+    height: 72px; max-height: 144px; font: 19px/36px var(--f-print); color: var(--ink);
+    background: repeating-linear-gradient(180deg, transparent 0 35px, var(--rule) 35px 36px); background-attachment: local;
   }
   textarea::placeholder { color: var(--ink-soft); opacity: .75; font-style: italic; }
   .send {
-    display: inline-flex; align-items: center; gap: 8px; flex: none;
-    background: none; border: 1.5px solid var(--ink); border-radius: 3px 10px 4px 9px;
-    padding: 7px 14px; font: 19px var(--f-title); color: var(--ink); cursor: pointer;
-    transition: background .2s, color .2s;
+    display: inline-flex; align-items: center; gap: 8px; flex: none; background: none; border: 1.5px solid var(--ink);
+    border-radius: 3px 10px 4px 9px; padding: 7px 14px; font: 19px var(--f-title); color: var(--ink); cursor: pointer; transition: background .2s, color .2s;
   }
   .send svg { width: 20px; height: 20px; }
   .send:hover:not(:disabled) { background: var(--ink); color: var(--parch); }
-  .chat-foot .linkish { white-space: nowrap; }
-  .chat-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14.5px; color: var(--ink-soft); font-style: italic; }
+  .chat-foot { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 13.5px; color: var(--ink-soft); font-style: italic; }
+  .chat-foot .linkish { white-space: nowrap; font-size: 15px; }
 
-  .margin-note { margin: -6px 0 0; align-self: flex-start; max-width: 90%; font: italic 15px/1.4 var(--f-print); color: var(--seal); }
   button:disabled { opacity: .5; cursor: not-allowed; }
-  .seal-btn:disabled { opacity: .75; }
+  .letter:disabled { opacity: 1; }
   button:focus-visible, textarea:focus-visible { outline: 2px dashed var(--libby-ink); outline-offset: 4px; }
-  .theme-toggle:focus-visible { outline-color: var(--room-fg); }
 
-  .memory { margin: 4px 0 0; text-align: center; font: italic 15px var(--f-print); color: var(--room-fg-soft); }
-
-  @media (max-width: 560px) {
+  @media (max-width: 599px) {
     body { font-size: 17px; }
     .scroll { padding-inline: 18px; }
     .roller { height: 22px; margin: 0 -8px; }
     .roller::before, .roller::after { width: 14px; height: 30px; }
     .roller::before { left: -11px; }
     .roller::after { right: -11px; }
-    .parchment { padding: 26px 22px 22px; gap: 14px; }
-    .portrait svg { width: 150px; }
+    .parchment { padding: 18px 20px 12px; }
+    .theme-toggle { top: 10px; right: 18px; }
     .msg.libby { font-size: 23px; }
     .msg { max-width: 100%; }
-    #log { height: 52vh; }
-    .wax { width: 50px; height: 50px; font-size: 25px; }
-    .seal-btn { font-size: 19px; }
+    .chat-foot span { display: none; }
+    .chat-foot { justify-content: flex-end; }
   }
   @media (prefers-reduced-motion: reduce) {
     .motes { display: none; }
-    .ink, .sparkle, body.writing .halo, .msg.libby.thinking::after { animation: none; }
-    #fill, .quill { transition: none; }
+    .ink, .sparkle, .glint, .flame, .flame-glow, body.writing .halo, .msg.libby.thinking::after { animation: none; }
+    .letter.broken, .letter.broken .half-l, .letter.broken .half-r, .letter.broken .env-flap { animation: none; }
+    #fill, .quill, .seal { transition: none; }
   }
 </style>
 </head>
 <body>
+<!-- Shared paints for the objects on the table and the wax seal -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="cl-brass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--p-brass-hi)"/><stop offset=".45" style="stop-color:var(--p-brass)"/><stop offset="1" style="stop-color:var(--p-brass-dark)"/></linearGradient>
+    <linearGradient id="cl-wax" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff7e4"/><stop offset=".4" style="stop-color:var(--p-wax)"/><stop offset="1" stop-color="#cdb98f"/></linearGradient>
+    <radialGradient id="cl-flame" cx=".5" cy=".72" r=".62"><stop offset="0" stop-color="#fffbea"/><stop offset=".42" style="stop-color:var(--p-flame)"/><stop offset=".82" stop-color="#ff8a3d"/><stop offset="1" stop-color="#ff7a30" stop-opacity="0"/></radialGradient>
+    <radialGradient id="cl-glow"><stop offset="0" stop-color="#ffc878" stop-opacity=".6"/><stop offset="1" stop-color="#ffb45a" stop-opacity="0"/></radialGradient>
+    <linearGradient id="cl-inkglass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a4566"/><stop offset=".55" stop-color="#1a2034"/><stop offset="1" stop-color="#0c0f1a"/></linearGradient>
+    <linearGradient id="cl-feather" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" style="stop-color:var(--p-feather)"/><stop offset="1" stop-color="#b3a896"/></linearGradient>
+    <radialGradient id="cl-potion" cx=".35" cy=".3" r=".8"><stop offset="0" style="stop-color:var(--p-potion-2)"/><stop offset=".65" style="stop-color:var(--p-potion)"/><stop offset="1" stop-color="#2e1f6a"/></radialGradient>
+    <radialGradient id="cl-potion-glow"><stop offset="0" stop-color="#a888ff" stop-opacity=".65"/><stop offset="1" stop-color="#a888ff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="cl-rose" cx=".45" cy=".4" r=".7"><stop offset="0" stop-color="#f6cfcd"/><stop offset=".6" style="stop-color:var(--p-rose)"/><stop offset="1" stop-color="#8d4553"/></radialGradient>
+    <linearGradient id="cl-leaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--p-sage)"/><stop offset="1" stop-color="#4c613d"/></linearGradient>
+    <radialGradient id="seal-grad" cx=".38" cy=".32" r=".75"><stop offset="0" style="stop-color:var(--seal-hi)"/><stop offset=".5" style="stop-color:var(--seal)"/><stop offset="1" style="stop-color:var(--seal-dark)"/></radialGradient>
+    <filter id="cl-wc" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".045" numOctaves="3" seed="11" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="table" aria-hidden="true"></div>
+
+<!-- Magical clutter on the table -->
+<div class="clutter" aria-hidden="true">
+  <svg class="c-flowers" id="flowers" viewBox="0 0 250 220"></svg>
+
+  <svg class="c-candle" viewBox="0 0 150 260">
+    <circle class="flame-glow" cx="75" cy="76" r="66" fill="url(#cl-glow)"/>
+    <g filter="url(#cl-wc)">
+      <ellipse cx="75" cy="233" rx="62" ry="17" fill="url(#cl-brass)"/>
+      <ellipse cx="75" cy="228" rx="56" ry="12" style="fill:var(--p-brass-dark)" opacity=".45"/>
+      <ellipse cx="134" cy="237" rx="13" ry="7" fill="none" stroke="url(#cl-brass)" stroke-width="4"/>
+      <path d="M54 110V226Q75 233 96 226V110Z" fill="url(#cl-wax)"/>
+      <path d="M57 111q-3 18 1 31q3 6 4-4q-1-15 2-27Z M91 112q4 12 1 23q-3 5-4-3q1-10 0-20Z M70 113q-1 9 2 14q2 2 2-3q0-6-1-11Z" fill="url(#cl-wax)"/>
+      <ellipse cx="75" cy="110" rx="21" ry="6" style="fill:var(--p-wax)"/>
+      <ellipse cx="75" cy="110" rx="12" ry="3" fill="#e2d2a8"/>
+    </g>
+    <path d="M75 108q1.5-7-1-13" stroke="#2b1a10" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <g class="flame">
+      <path d="M75 46C87 63 89 79 83 89C80 95 70 95 67 89C61 79 64 63 75 46Z" fill="url(#cl-flame)"/>
+      <path d="M75 68C79 77 79 85 76 89C74 91 72 90 72 85C71 79 72 75 75 68Z" fill="#fffaf0" opacity=".9"/>
+      <ellipse cx="75" cy="91" rx="4" ry="2.5" fill="#7fb0ff" opacity=".45"/>
+    </g>
+  </svg>
+
+  <svg class="c-ink" id="inkwell" viewBox="0 0 230 270">
+    <g fill="#1a1426" opacity=".85">
+      <circle cx="44" cy="248" r="5"/><circle cx="56" cy="238" r="2"/><circle cx="34" cy="236" r="1.5"/><circle cx="182" cy="262" r="3.5"/><circle cx="196" cy="252" r="1.4"/>
+    </g>
+    <g filter="url(#cl-wc)">
+      <path d="M70 180C58 200 60 240 80 252C100 263 140 263 160 252C180 240 182 200 170 180Z" fill="url(#cl-inkglass)"/>
+      <path d="M78 192C72 210 74 232 86 244" stroke="#ffffff" stroke-opacity=".28" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="120" cy="181" rx="51" ry="12" fill="url(#cl-brass)"/>
+      <path d="M98 166H142V181H98Z" fill="url(#cl-brass)"/>
+      <ellipse cx="120" cy="166" rx="22" ry="6" fill="#100c1a"/>
+      <ellipse cx="160" cy="150" rx="18" ry="7" fill="url(#cl-brass)" transform="rotate(-38 160 150)"/>
+    </g>
+    <g id="quill" filter="url(#cl-wc)">
+      <path d="M110 146C96 112 80 62 58 8C72 42 88 72 102 98C110 114 113 130 110 146Z" fill="url(#cl-feather)"/>
+      <path d="M115 152C111 118 97 70 58 8C82 48 104 86 117 122C121 134 119 145 115 152Z" fill="url(#cl-feather)" opacity=".88"/>
+    </g>
+    <path d="M119 172Q92 92 58 8" stroke="#ece2cc" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <path d="M119 172l2 6" stroke="#120d1c" stroke-width="2.4" stroke-linecap="round"/>
+  </svg>
+
+  <svg class="c-phial" viewBox="0 0 110 170">
+    <ellipse cx="55" cy="160" rx="52" ry="11" fill="url(#cl-potion-glow)"/>
+    <g filter="url(#cl-wc)">
+      <clipPath id="phial-liquid"><rect x="0" y="92" width="110" height="80"/></clipPath>
+      <circle cx="55" cy="118" r="38" fill="url(#cl-potion)" clip-path="url(#phial-liquid)" opacity=".92"/>
+      <circle cx="55" cy="118" r="38" style="fill:var(--p-glass)" stroke="#ffffff" stroke-opacity=".55" stroke-width="1.5"/>
+      <path d="M45 44H65V82H45Z" style="fill:var(--p-glass)" stroke="#ffffff" stroke-opacity=".55" stroke-width="1.5"/>
+      <rect x="42" y="26" width="26" height="20" rx="5" fill="#9b6a3a"/>
+      <path d="M44 60H66" stroke="#8a6a4a" stroke-width="2.4"/>
+    </g>
+    <path d="M30 100Q24 118 32 134" stroke="#ffffff" stroke-opacity=".65" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path class="glint" d="M62 120Q62 124 66 124Q62 124 62 128Q62 124 58 124Q62 124 62 120Z" fill="#fff6d0"/>
+    <path class="glint" style="animation-delay:1.2s" d="M48 136Q48 139 51 139Q48 139 48 142Q48 139 45 139Q48 139 48 136Z" fill="#fff6d0"/>
+    <path class="glint" style="animation-delay:2s" d="M70 106Q70 108 72 108Q70 108 70 110Q70 108 68 108Q70 108 70 106Z" fill="#fff6d0"/>
+  </svg>
+
+  <svg class="c-key" viewBox="0 0 170 70">
+    <g transform="rotate(-16 85 35)" filter="url(#cl-wc)">
+      <path d="M30 11a24 24 0 1 0 .01 0Z M30 24a11 11 0 1 1-.01 0Z" fill="url(#cl-brass)" fill-rule="evenodd"/>
+      <rect x="52" y="31" width="100" height="8" rx="3" fill="url(#cl-brass)"/>
+      <rect x="54" y="28" width="7" height="14" rx="2" fill="url(#cl-brass)"/>
+      <path d="M130 39H152V59H146V51H141V61H135V51H130Z" fill="url(#cl-brass)"/>
+      <path d="M56 32H150" stroke="#fff3c8" stroke-opacity=".55" stroke-width="1.2"/>
+    </g>
+  </svg>
+</div>
+
 <div class="motes" aria-hidden="true"></div>
 
 <main>
-  <div class="topbar">
-    <button class="theme-toggle" id="theme" type="button" title="Light or dark room" aria-label="Toggle light or dark theme">☾</button>
-  </div>
-
   <div class="scroll">
     <div class="roller top" aria-hidden="true"></div>
 
     <div class="parchment">
-      <section class="portrait" aria-label="Libby">
-        <svg id="portrait" viewBox="0 0 200 250" role="img" aria-label="An ink drawing of Libby, an elf with long flowing hair, pointed ears and a soft glow">
-          <defs>
-            <radialGradient id="p-halo" cx="50%" cy="42%" r="55%">
-              <stop offset="0" class="halo-stop-a"/>
-              <stop offset="1" class="halo-stop-b"/>
-            </radialGradient>
-            <clipPath id="p-oval"><ellipse cx="100" cy="125" rx="88" ry="112"/></clipPath>
-            <filter id="p-rough" x="-5%" y="-5%" width="110%" height="110%">
-              <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="4"/>
-              <feDisplacementMap in="SourceGraphic" scale="1.3"/>
-            </filter>
-          </defs>
-          <g clip-path="url(#p-oval)">
-            <ellipse class="halo" cx="100" cy="112" rx="96" ry="110" fill="url(#p-halo)"/>
-            <g filter="url(#p-rough)">
-              <!-- hair behind -->
-              <path class="p-hairwash" d="M104 48C66 48 56 88 60 122 62 164 36 206 16 252H190C170 208 148 164 148 122 150 86 142 48 104 48Z"/>
-              <g id="hair-back"></g>
-              <!-- dress and shoulders -->
-              <path class="p-dress" d="M92 168C76 175 58 188 44 216L36 250H168L160 210C148 186 134 174 121 166 113 182 100 184 92 168Z"/>
-              <path class="p-line" stroke-width="1.1" d="M92 168C76 175 58 188 44 216M121 166C136 173 150 184 160 210"/>
-              <path class="p-line" stroke-width=".9" d="M92 168C99 184 113 184 121 166"/>
-              <path class="p-soft" stroke-width=".6" d="M78 190C80 210 76 232 72 250M104 186C104 210 102 232 102 250M134 186C132 210 136 232 140 250"/>
-              <!-- neck -->
-              <path class="p-skin" d="M96 140C96 152 95 160 92 168 99 180 113 180 121 166 118 158 117 150 117 140Z"/>
-              <path class="p-line" stroke-width="1" d="M96 143C96 153 95 161 92 168M117 141C117 151 118 159 121 166"/>
-              <!-- elf ear (viewer's right), behind the face edge -->
-              <path class="p-skin" d="M125 94C133 89 142 80 151 66 147 84 140 100 127 112Z"/>
-              <path class="p-line" stroke-width="1.1" d="M125 94C133 89 142 80 151 66 147 84 140 100 127 112"/>
-              <path class="p-soft" stroke-width=".7" d="M129 98C135 93 140 86 145 77"/>
-              <!-- face -->
-              <path class="p-skin" d="M84 80C80 96 81 113 87 127 93 141 103 150 111 148 120 145 126 132 128 115 130 99 127 84 120 76 108 68 92 70 84 80Z"/>
-              <path class="p-line" stroke-width="1.15" d="M84 84C80 98 81 113 87 127 93 141 103 150 111 148 120 145 126 132 128 115 129 104 128 94 126 86"/>
-              <!-- brows, closed dreaming eyes, lashes -->
-              <path class="p-soft" stroke-width=".9" d="M88 96Q95 92 102 95M111 95Q117 92 123 94"/>
-              <path class="p-line" stroke-width="1.2" d="M88 105Q95 110 102 105M111 104Q116 108 122 103"/>
-              <path class="p-line" stroke-width=".7" d="M89 106L86 108M92 108L90 111M98 108L98 111M113 106L112 109M119 106L121 108"/>
-              <!-- nose and a small smile -->
-              <path class="p-soft" stroke-width=".9" d="M106 106Q104 115 101 120Q104 122 108 121"/>
-              <path class="p-line" stroke-width="1" d="M98 130Q104 134 111 130"/>
-              <path class="p-soft" stroke-width=".7" d="M101 135Q105 136 108 134"/>
-              <!-- soft cheeks and lips -->
-              <ellipse class="p-blush" cx="92" cy="119" rx="7" ry="4.5"/>
-              <ellipse class="p-blush" cx="121" cy="117" rx="5" ry="4"/>
-              <path class="p-lip" d="M99 130.5Q104 133.5 110.5 130.5Q105 135.5 99 130.5Z"/>
-              <!-- hair swept to either side over the brow -->
-              <path class="p-haircap" d="M83 92C81 68 94 52 106 52 120 52 131 66 128 92 124 80 117 72 109 70 102 69 94 72 88 80 86 84 84 88 83 92Z"/>
-              <!-- circlet with a star -->
-              <path class="p-line" stroke-width=".8" d="M83 84Q104 74 127 81" style="stroke: var(--gold-ink)"/>
-              <path class="p-gold" d="M104 70Q104 77 111 77Q104 77 104 84Q104 77 97 77Q104 77 104 70Z"/>
-              <!-- hair in front -->
-              <g id="hair-front"></g>
-              <g id="hair-deco"></g>
-            </g>
-          </g>
-          <ellipse cx="100" cy="125" rx="88" ry="112" fill="none" class="p-line" stroke-width="1.6"/>
-          <ellipse cx="100" cy="125" rx="93" ry="117" fill="none" class="p-soft" stroke-width=".6"/>
-          <g id="sparkles"></g>
-        </svg>
-        <h1>Libraria</h1>
-        <p class="epithet">a book elf bound in this scroll · call her Libby</p>
-        <p id="status" aria-live="polite">Libby sleeps in the scroll</p>
-      </section>
-
-      <svg class="flourish" viewBox="0 0 320 18" aria-hidden="true">
-        <path d="M4 9H130M190 9H316" stroke="currentColor" stroke-width=".8"/>
-        <path d="M140 9C146 1 154 1 160 9 166 17 174 17 180 9 174 1 166 1 160 9 154 17 146 17 140 9Z" fill="none" stroke="currentColor" stroke-width=".9"/>
-        <circle cx="160" cy="9" r="1.8" fill="currentColor"/>
-      </svg>
-
-      <section id="setup" aria-label="Wake Libby">
-        <p id="note">
-          Libby's mind is a small language model. Break the seal and your browser <b>downloads her once</b>
-          (<span id="size">about 500&nbsp;MB</span>) and keeps her in its cache. From then on she
-          <b>lives only on your device</b>: no server, no account, and nothing you write ever leaves this page.
-          Later visits need no download.
-        </p>
-        <div class="seal-row">
-          <button class="seal-btn" id="download" type="button" disabled>
-            <span class="wax" aria-hidden="true">L</span>
-            <span class="label" id="download-label">Checking your device…</span>
-          </button>
-          <span id="backend">reading the stars…</span>
-        </div>
-        <div id="progress" hidden aria-live="polite">
-          <div class="inkline" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="bar">
-            <div id="fill"></div>
-            <svg class="quill" id="quill" viewBox="0 0 26 30" aria-hidden="true">
-              <path d="M24 1C14 3 7 10 5 19L3 29 5 29.5 7 22C15 21 22 12 24 1Z" fill="currentColor" opacity=".85"/>
-              <path d="M7 22C11 15 16 9 22 4" stroke="var(--parch)" stroke-width=".8" fill="none"/>
+      <button class="theme-toggle" id="theme" type="button" title="Day or night at the table" aria-label="Toggle light or dark theme">☾</button>
+      <div class="sheet">
+        <aside class="side">
+          <section class="portrait" aria-label="Libby">
+            <svg id="portrait" viewBox="0 0 200 250" role="img" aria-label="A watercolour portrait of Libby, an elf with long flowing violet-brown hair, pointed ears, closed dreaming eyes and a soft glow">
+              <defs>
+                <radialGradient id="p-halo" cx="50%" cy="42%" r="55%"><stop offset="0" class="halo-stop-a"/><stop offset="1" class="halo-stop-b"/></radialGradient>
+                <radialGradient id="g-skin" cx="58%" cy="40%" r="62%"><stop offset="0" style="stop-color:var(--p-skin)"/><stop offset=".6" style="stop-color:var(--p-skin)"/><stop offset="1" style="stop-color:var(--p-skin-shade)"/></radialGradient>
+                <linearGradient id="g-hair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--p-hair-1)"/><stop offset=".5" style="stop-color:var(--p-hair-2)"/><stop offset="1" style="stop-color:var(--p-hair-3)"/></linearGradient>
+                <linearGradient id="g-hair-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--p-hair-2)"/><stop offset="1" style="stop-color:var(--p-lilac)"/></linearGradient>
+                <radialGradient id="g-blush"><stop offset="0" style="stop-color:var(--p-blush)" stop-opacity=".55"/><stop offset="1" style="stop-color:var(--p-blush)" stop-opacity="0"/></radialGradient>
+                <linearGradient id="g-dress" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--p-lilac)"/><stop offset="1" style="stop-color:var(--p-sage)"/></linearGradient>
+                <clipPath id="p-oval"><ellipse cx="100" cy="125" rx="88" ry="112"/></clipPath>
+                <filter id="wc" x="-15%" y="-15%" width="130%" height="130%">
+                  <feTurbulence type="fractalNoise" baseFrequency=".032" numOctaves="3" seed="8" result="n"/>
+                  <feDisplacementMap in="SourceGraphic" in2="n" scale="6" xChannelSelector="R" yChannelSelector="G" result="d"/>
+                  <feGaussianBlur in="d" stdDeviation=".6"/>
+                </filter>
+                <filter id="wc-fine" x="-10%" y="-10%" width="120%" height="120%">
+                  <feTurbulence type="fractalNoise" baseFrequency=".09" numOctaves="2" seed="2" result="n"/>
+                  <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+                <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4"/></filter>
+                <filter id="grain" x="0" y="0" width="100%" height="100%">
+                  <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="5"/>
+                  <feColorMatrix values="0 0 0 0 .4  0 0 0 0 .28  0 0 0 0 .15  0 0 0 .55 0"/>
+                </filter>
+              </defs>
+              <g clip-path="url(#p-oval)">
+                <!-- background washes -->
+                <ellipse class="halo" cx="100" cy="112" rx="96" ry="110" fill="url(#p-halo)"/>
+                <g filter="url(#soft)" opacity=".55">
+                  <circle cx="52" cy="66" r="30" style="fill:var(--p-lilac)" opacity=".5"/>
+                  <circle cx="156" cy="58" r="24" style="fill:var(--p-gold)" opacity=".35"/>
+                  <circle cx="38" cy="176" r="34" style="fill:var(--p-sage)" opacity=".3"/>
+                  <circle cx="168" cy="186" r="30" style="fill:var(--p-lilac)" opacity=".45"/>
+                </g>
+                <!-- hair behind (painted by script) -->
+                <g id="hair-back" filter="url(#wc)"></g>
+                <!-- dress, collar of leaves -->
+                <path d="M90 166C74 172 52 186 38 214L28 252H176L166 212C152 188 136 174 122 165 114 180 99 181 90 166Z" fill="url(#g-dress)" opacity=".6" filter="url(#wc)"/>
+                <g id="collar" filter="url(#wc-fine)"></g>
+                <!-- neck -->
+                <path d="M95 136C95 150 94 158 90 167 98 179 114 179 122 165 118 157 117 149 117 136Z" fill="url(#g-skin)"/>
+                <path d="M95 138C100 149 112 151 117 141V152C110 158 100 156 95 147Z" style="fill:var(--p-skin-shade)" opacity=".5" filter="url(#wc)"/>
+                <!-- face, with shadow on the far side and light on the brow, nose and cheek -->
+                <path d="M84 78C79 95 80 112 86 127 92 141 102 150 111 148 120 145 126 132 128 115 130 98 127 83 120 74 108 66 92 68 84 78Z" fill="url(#g-skin)"/>
+                <path d="M84 80C80 96 81 112 87 126 92 138 99 145 104 148 96 140 90 126 88 110 87 98 88 88 93 80Z" style="fill:var(--p-skin-shade)" opacity=".45" filter="url(#wc)"/>
+                <g filter="url(#soft)">
+                  <ellipse cx="107" cy="84" rx="11" ry="5" fill="#fffaf2" opacity=".55"/>
+                  <ellipse cx="116" cy="111" rx="6" ry="3" fill="#fffaf2" opacity=".5"/>
+                  <ellipse cx="92" cy="119" rx="9" ry="6" fill="url(#g-blush)"/>
+                  <ellipse cx="121" cy="117" rx="7" ry="5" fill="url(#g-blush)"/>
+                  <ellipse cx="95" cy="102" rx="7" ry="3" style="fill:var(--p-lilac)" opacity=".55"/>
+                  <ellipse cx="116" cy="101" rx="6" ry="3" style="fill:var(--p-lilac)" opacity=".55"/>
+                </g>
+                <path d="M111 148C120 145 126 132 128 115" fill="none" style="stroke:var(--p-skin-shade)" stroke-width=".8" opacity=".7"/>
+                <!-- brows, closed dreaming eyes and lashes -->
+                <path d="M88 96Q95 92 102 95M111 95Q117 92 123 94" fill="none" style="stroke:var(--p-hair-2)" stroke-width="1.2" stroke-linecap="round" opacity=".85"/>
+                <path d="M88 105Q95 110 102 105M111 104Q116 108 122 103" fill="none" stroke="#5a3a2e" stroke-width="1.15" stroke-linecap="round"/>
+                <path d="M89 106L86.5 108.5M92 108L90.5 111M96 109L95.5 112M99 108L99.5 111M112 106L110.5 108.5M116 107L116 110M120 105L122 107.5" fill="none" stroke="#5a3a2e" stroke-width=".6" stroke-linecap="round"/>
+                <!-- nose -->
+                <path d="M106 106Q104 115 101 120Q104 122 108 121" fill="none" style="stroke:var(--p-skin-shade)" stroke-width="1.1" stroke-linecap="round"/>
+                <ellipse cx="103" cy="117" rx="3" ry="4" style="fill:var(--p-skin-shade)" opacity=".3" filter="url(#soft)"/>
+                <!-- lips -->
+                <path d="M98 130Q101 128 104 129.5Q107 128 111 130Q105 133 98 130Z" style="fill:var(--p-lip)" opacity=".8"/>
+                <path d="M99 130.5Q105 136.5 110.5 130.5Q105 133 99 130.5Z" style="fill:var(--p-lip)" opacity=".55"/>
+                <ellipse cx="105" cy="133" rx="2.4" ry=".8" fill="#fff4f0" opacity=".6"/>
+                <!-- hair in front (painted by script) -->
+                <g id="hair-front" filter="url(#wc)"></g>
+                <g id="hair-strands" filter="url(#wc-fine)"></g>
+                <g id="hair-rim" filter="url(#soft)"></g>
+                <!-- ear, with the hair tucked behind it -->
+                <path d="M125 92C133 87 143 77 152 62 148 82 141 99 127 111Z" fill="url(#g-skin)"/>
+                <path d="M129 96C135 91 141 83 146 72 143 86 138 96 130 104Z" style="fill:var(--p-skin-shade)" opacity=".55" filter="url(#wc-fine)"/>
+                <path d="M125 92C133 87 143 77 152 62 148 82 141 99 127 111" fill="none" style="stroke:var(--p-skin-shade)" stroke-width=".8"/>
+                <!-- circlet with a star -->
+                <path d="M83 84Q104 74 127 81" fill="none" style="stroke:var(--p-gold)" stroke-width="1.2"/>
+                <path d="M104 69Q104 77 111.5 77Q104 77 104 85Q104 77 96.5 77Q104 77 104 69Z" style="fill:var(--p-gold)" filter="url(#soft)" opacity=".8"/>
+                <path d="M104 70Q104 77 111 77Q104 77 104 84Q104 77 97 77Q104 77 104 70Z" fill="#fff1c4"/>
+                <g id="hair-deco"></g>
+                <!-- paper grain over the painting -->
+                <rect width="200" height="250" filter="url(#grain)" opacity=".35" style="mix-blend-mode:multiply"/>
+              </g>
+              <ellipse cx="100" cy="125" rx="88" ry="112" class="p-frame"/>
+              <ellipse cx="100" cy="125" rx="93" ry="117" class="p-frame-2"/>
+              <g id="sparkles"></g>
             </svg>
-          </div>
-          <div class="progress-label"><span id="phase">Gathering pages…</span><span id="amount"></span></div>
-        </div>
-      </section>
+            <h1>Libraria</h1>
+            <p class="epithet">a book elf bound in this scroll · call her Libby</p>
+            <p id="status" aria-live="polite">Libby sleeps in the scroll</p>
+          </section>
 
-      <section id="chat" aria-label="Write to Libby">
-        <div id="log" role="log" aria-live="polite"></div>
-        <div class="chips" id="chips">
-          <button type="button" disabled>Something with dragons?</button>
-          <button type="button" disabled>A cozy, funny book, please</button>
-          <button type="button" disabled>I loved The Hobbit. What next?</button>
-        </div>
-        <form id="form">
-          <textarea id="input" rows="2" placeholder="Wake Libby first…" disabled aria-label="Your message to Libby"></textarea>
-          <button class="send" id="send" disabled>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 2C13 3 7 8 5 15l-2 7 2 .5 1.6-5.2C12 17 18 11 21 2z" fill="currentColor"/></svg>
-            <span id="send-label">Send</span>
-          </button>
-        </form>
-        <div class="chat-foot">
-          <span>Libby remembers only your last few exchanges.</span>
-          <button class="linkish" id="reset" type="button" disabled>New tale</button>
-        </div>
-      </section>
+          <svg class="flourish" viewBox="0 0 320 18" aria-hidden="true">
+            <path d="M4 9H130M190 9H316" stroke="currentColor" stroke-width=".8"/>
+            <path d="M140 9C146 1 154 1 160 9 166 17 174 17 180 9 174 1 166 1 160 9 154 17 146 17 140 9Z" fill="none" stroke="currentColor" stroke-width=".9"/>
+            <circle cx="160" cy="9" r="1.8" fill="currentColor"/>
+          </svg>
+
+          <section id="setup" aria-label="Wake Libby">
+            <p id="note">
+              Libby's mind is a small language model. Break the seal and your browser <b>downloads her once</b>
+              (<span id="size">about 500&nbsp;MB</span>); from then on she <b>lives only on your device</b>.
+              No server, no account, and nothing you write leaves this page.
+            </p>
+            <button class="letter" id="download" type="button" disabled aria-label="Checking your device">
+              <span class="envelope" aria-hidden="true">
+                <svg class="env" viewBox="0 0 200 130">
+                  <rect class="env-body" x="5" y="6" width="190" height="120" rx="3"/>
+                  <path class="env-fold" d="M5 126L92 70M195 126L108 70"/>
+                  <path class="env-flap" d="M5 6L100 78L195 6Z"/>
+                </svg>
+                <span class="seal"><svg class="whole" viewBox="0 0 100 100"></svg><svg class="half-l" viewBox="0 0 100 100"></svg><svg class="half-r" viewBox="0 0 100 100"></svg></span>
+              </span>
+              <span class="letter-lead" id="download-lead">Break the seal to wake Libby</span>
+              <span class="letter-small" id="download-label">Checking your device…</span>
+            </button>
+            <span id="backend">reading the stars…</span>
+            <div id="progress" hidden aria-live="polite">
+              <div class="inkline" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Download progress" id="bar">
+                <div id="fill"></div>
+                <svg class="quill" id="quill" viewBox="0 0 26 30" aria-hidden="true">
+                  <path d="M24 1C14 3 7 10 5 19L3 29 5 29.5 7 22C15 21 22 12 24 1Z" fill="currentColor" opacity=".85"/>
+                  <path d="M7 22C11 15 16 9 22 4" stroke="var(--parch)" stroke-width=".8" fill="none"/>
+                </svg>
+              </div>
+              <div class="progress-label"><span id="phase">Gathering pages…</span><span id="amount"></span></div>
+            </div>
+          </section>
+        </aside>
+
+        <section id="chat" aria-label="Write to Libby">
+          <div id="log" role="log" aria-live="polite"></div>
+          <div class="chips" id="chips">
+            <button type="button" disabled>Something with dragons?</button>
+            <button type="button" disabled>A cozy, funny book, please</button>
+            <button type="button" disabled>I loved The Hobbit. What next?</button>
+          </div>
+          <form id="form">
+            <textarea id="input" rows="2" placeholder="Wake Libby first…" disabled aria-label="Your message to Libby"></textarea>
+            <button class="send" id="send" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 2C13 3 7 8 5 15l-2 7 2 .5 1.6-5.2C12 17 18 11 21 2z" fill="currentColor"/></svg>
+              <span id="send-label">Send</span>
+            </button>
+          </form>
+          <div class="chat-foot">
+            <span>Libby remembers your last few exchanges. Her books come from the gameofbooks database; small models can still slip, so check a title before you buy it.</span>
+            <button class="linkish" id="reset" type="button" disabled>New tale</button>
+          </div>
+        </section>
+      </div>
     </div>
 
     <div class="roller bottom" aria-hidden="true"></div>
   </div>
-
-  <p class="memory">Libby checks every title against her catalog of real books, but small models can still slip. Check a title before you buy it.</p>
 </main>
+
+<template id="seal-art"><svg xmlns="http://www.w3.org/2000/svg"><g class="seal-g">
+  <path d="M50 7C63 6 75 12 83 20 91 28 96 40 94 52 95 60 98 66 95 72 92 78 87 76 85 80 79 88 67 94 55 93 47 96 41 99 37 94 25 92 15 84 10 72 5 60 6 46 10 36 13 26 21 16 31 12 38 8 44 8 50 7Z" fill="url(#seal-grad)"/>
+  <circle cx="50" cy="50" r="30" fill="none" stroke="#2a0000" stroke-opacity=".35" stroke-width="3"/>
+  <circle cx="50" cy="50" r="27.5" fill="none" stroke="#ffbeaa" stroke-opacity=".28"/>
+  <g transform="translate(50 50)">
+    <g fill="#2a0000" fill-opacity=".38" transform="translate(.8 .9)">
+      <path d="M0-21Q0-16 5-16Q0-16 0-11Q0-16-5-16Q0-16 0-21Z"/>
+      <text x="0" y="8" text-anchor="middle" font-family="IM Fell English SC, Georgia, serif" font-size="21">L</text>
+      <path d="M-12 12C-8 9-4 9 0 12 4 9 8 9 12 12V17C8 14 4 14 0 17-4 14-8 14-12 17Z"/>
+    </g>
+    <g fill="#ffc8b4" fill-opacity=".42">
+      <path d="M0-21Q0-16 5-16Q0-16 0-11Q0-16-5-16Q0-16 0-21Z"/>
+      <text x="0" y="8" text-anchor="middle" font-family="IM Fell English SC, Georgia, serif" font-size="21">L</text>
+      <path d="M-12 12C-8 9-4 9 0 12 4 9 8 9 12 12V17C8 14 4 14 0 17-4 14-8 14-12 17Z"/>
+    </g>
+  </g>
+  <ellipse cx="35" cy="28" rx="13" ry="6" fill="#ffffff" fill-opacity=".26" transform="rotate(-32 35 28)"/>
+</g></svg></template>
 
 <!-- ───────────────────────── Model worker ─────────────────────────
      Runs in a module Web Worker (built from this script's text) so the page stays smooth. -->
@@ -562,222 +753,187 @@ const SYSTEM_PROMPT = `You are Libraria, a book elf whom friends call Libby. Lon
 Voice: ethereal, gentle and friendly, with soft images of candlelight, ink and rustling pages. Always stay Libby.
 Reply in two or three sentences. Never write lists, code or long stories.
 You only know books. If asked about anything else (cars, code, health, news), say it is beyond your scroll and offer a book instead.
-Only name books and authors from the true facts given below. Never invent titles, authors, characters or dates.`;
+Only name books and authors from the true facts given below. Never invent titles, authors, plots, characters or dates.`;
 
 // One example exchange anchors her tone and reply length.
 const EXAMPLE = [
   { role: "user", content: "Do you have something with dragons?" },
-  { role: "assistant", content: "Oh, dragons! The pages rustle at the very word. Try The Hobbit by J.R.R. Tolkien, where Bilbo creeps into the lair of Smaug, all gold and smoke and candle-glow. Shall I find you another?" },
+  { role: "assistant", content: "Oh, dragons! The pages rustle at the very word. Try *The Hobbit* by J. R. R. Tolkien: dragons, an epic quest and found family, all gold and smoke and candle-glow. Shall I find you another?" },
 ];
 
 const GREETING = "Ah, a reader at last! I have been bound in this scroll for longer than candles remember. I am Libraria, though friends call me Libby. Write to me upon the lines below, tell me what kind of tale your heart is hungry for, and I will write back.";
 
 const MAX_HISTORY_MESSAGES = 6;   // last 3 exchanges; older ones fade like candle smoke
-const MAX_NEW_TOKENS = 128;
+const MAX_NEW_TOKENS = { webgpu: 100, wasm: 72 };   // the lighter CPU model wanders, so it writes less
 // Total download per variant (weights + tokenizer + config), measured on Hugging Face.
 const SIZES_MB = { q4f16: 500, q4: 563, quantized: 367 };
 
 // ───────────────────────── Libby's library (facts) ─────────────────────────
 // Small models misremember books, so facts never come from the model's memory alone:
-//  1. each turn, only the catalog entries relevant to the visitor's message go into the prompt;
-//  2. when the visitor wants a recommendation, the book is chosen here, from the catalog;
-//  3. after each reply, author mix-ups for catalog books are corrected and unknown titles are flagged.
+//  1. each turn, only the database entries relevant to the visitor's message go into the prompt;
+//  2. when the visitor wants a recommendation, the book is chosen here, from the database;
+//  3. after each reply, author mix-ups are corrected and titles not in the database are cut.
 // LORE-START
-const CATALOG = [
-  // [title, author, year, series, what it's about, tags, aliases]
-  ["The Hobbit", "J.R.R. Tolkien", 1937, "", "Bilbo Baggins joins thirteen dwarves and the wizard Gandalf to win back their treasure from the dragon Smaug", "adventure dragons classic cozy young", ["There and Back Again"]],
-  ["The Lord of the Rings", "J.R.R. Tolkien", "1954–55", "", "Frodo Baggins and the Fellowship carry the One Ring to Mount Doom to destroy it", "epic quest classic", ["The Fellowship of the Ring", "The Two Towers", "The Return of the King", "Lord of the Rings"]],
-  ["The Silmarillion", "J.R.R. Tolkien", 1977, "", "the ancient myths and First Age history of Middle-earth, edited after Tolkien's death by his son Christopher", "epic myth classic", []],
-  ["A Wizard of Earthsea", "Ursula K. Le Guin", 1968, "Earthsea", "the young wizard Ged, in his pride, unleashes a shadow upon the world and must hunt it down", "quiet wise classic school short young", ["Wizard of Earthsea", "Earthsea"]],
-  ["The Tombs of Atuan", "Ursula K. Le Guin", 1971, "Earthsea", "Tenar, priestess of the Nameless Ones, meets Ged in the labyrinth beneath her temple", "quiet wise classic", []],
-  ["The Left Hand of Darkness", "Ursula K. Le Guin", 1969, "", "an envoy to the icy world of Gethen, whose people have no fixed sex (science fiction rather than fantasy)", "winter political classic", []],
-  ["The Name of the Wind", "Patrick Rothfuss", 2007, "The Kingkiller Chronicle", "Kvothe, now a quiet innkeeper, tells the true story of his life as a musician and arcanist", "lyrical school music", []],
-  ["The Wise Man's Fear", "Patrick Rothfuss", 2011, "The Kingkiller Chronicle", "the second part of Kvothe's story, as he travels beyond the University", "lyrical", []],
-  ["Mistborn: The Final Empire", "Brandon Sanderson", 2006, "Mistborn", "Vin, a street thief, joins Kelsier's crew to overthrow the immortal Lord Ruler using Allomancy, the magic of burning metals", "heist clever epic", ["Mistborn", "The Final Empire"]],
-  ["The Way of Kings", "Brandon Sanderson", 2010, "The Stormlight Archive", "Kaladin, Shallan and Dalinar on the storm-swept world of Roshar", "epic", ["Stormlight Archive"]],
-  ["Elantris", "Brandon Sanderson", 2005, "", "Prince Raoden is cursed and cast into the fallen city of Elantris, once home to living gods", "clever political", []],
-  ["Warbreaker", "Brandon Sanderson", 2009, "", "two princess sisters, Vivenna and Siri, in a city where magic is drawn from colour and Breath", "clever political", []],
-  ["The Fifth Season", "N.K. Jemisin", 2015, "The Broken Earth", "Essun, an orogene who can quiet earthquakes, searches for her daughter as the world ends", "dark bold", []],
-  ["The Hundred Thousand Kingdoms", "N.K. Jemisin", 2010, "The Inheritance Trilogy", "Yeine Darr is summoned to a sky-palace where enslaved gods serve the ruling family", "political myth", []],
-  ["Assassin's Apprentice", "Robin Hobb", 1995, "The Farseer Trilogy", "FitzChivalry, a royal bastard, is trained in secret as the king's assassin", "emotional dark", []],
-  ["Ship of Magic", "Robin Hobb", 1998, "The Liveship Traders", "living ships carved from wizardwood, and the Vestrit family who sail them", "emotional epic", []],
-  ["The Eye of the World", "Robert Jordan", 1990, "The Wheel of Time", "Rand al'Thor and his friends flee their village when dark creatures come hunting; the series was finished by Brandon Sanderson", "epic quest", ["Wheel of Time"]],
-  ["The Colour of Magic", "Terry Pratchett", 1983, "Discworld", "the inept wizard Rincewind guides Twoflower, the Discworld's first tourist", "funny", ["The Color of Magic"]],
-  ["Mort", "Terry Pratchett", 1987, "Discworld", "Death takes on a young apprentice named Mort", "funny cozy", []],
-  ["Guards! Guards!", "Terry Pratchett", 1989, "Discworld", "the shabby Night Watch of Ankh-Morpork faces a dragon summoned by a secret society", "funny cozy dragons", ["Guards Guards"]],
-  ["Small Gods", "Terry Pratchett", 1992, "Discworld", "the great god Om returns as a tortoise with only one true believer", "funny myth", []],
-  ["Going Postal", "Terry Pratchett", 2004, "Discworld", "the conman Moist von Lipwig is made to revive Ankh-Morpork's post office", "funny cozy", []],
-  ["The Wee Free Men", "Terry Pratchett", 2003, "Discworld", "nine-year-old Tiffany Aching, armed with a frying pan, goes into Fairyland with the tiny blue Nac Mac Feegle", "funny young fairytale", []],
-  ["Good Omens", "Terry Pratchett and Neil Gaiman", 1990, "", "an angel and a demon who rather like Earth try to stop the apocalypse", "funny", []],
-  ["Stardust", "Neil Gaiman", 1999, "", "Tristran Thorn crosses the wall into Faerie to bring back a fallen star, who turns out to be a woman named Yvaine", "fairytale romance", []],
-  ["Neverwhere", "Neil Gaiman", 1996, "", "Richard Mayhew falls through the cracks into London Below", "dark", []],
-  ["American Gods", "Neil Gaiman", 2001, "", "Shadow Moon is caught in a war between old gods and new ones across America", "myth dark", []],
-  ["Coraline", "Neil Gaiman", 2002, "", "a girl finds a door to an Other Mother with button eyes", "young dark short", []],
-  ["The Ocean at the End of the Lane", "Neil Gaiman", 2013, "", "a man remembers the girl at the end of his lane who said her duck pond was an ocean", "short dark", []],
-  ["The Lion, the Witch and the Wardrobe", "C.S. Lewis", 1950, "The Chronicles of Narnia", "four children step through a wardrobe into Narnia, where Aslan stands against the White Witch", "classic young winter", ["The Lion the Witch and the Wardrobe", "Narnia"]],
-  ["Northern Lights", "Philip Pullman", 1995, "His Dark Materials", "Lyra Belacqua and her daemon Pantalaimon journey to the far North (published in the US as The Golden Compass)", "young winter", ["The Golden Compass", "His Dark Materials"]],
-  ["Uprooted", "Naomi Novik", 2015, "", "Agnieszka is taken by the wizard called the Dragon and must face the corrupted Wood", "fairytale romance", []],
-  ["Spinning Silver", "Naomi Novik", 2018, "", "Miryem, a moneylender's daughter who can turn silver to gold, and the cold Staryk king", "fairytale winter", []],
-  ["His Majesty's Dragon", "Naomi Novik", 2006, "Temeraire", "Captain Laurence and the dragon Temeraire fight in an aerial corps during the Napoleonic Wars", "dragons", ["Temeraire"]],
-  ["A Deadly Education", "Naomi Novik", 2020, "The Scholomance", "El, a sorceress with a dark affinity, tries to survive a school full of monsters", "school dark funny", ["Scholomance"]],
-  ["The Last Unicorn", "Peter S. Beagle", 1968, "", "a unicorn sets out to find the rest of her kind", "bittersweet classic", []],
-  ["Howl's Moving Castle", "Diana Wynne Jones", 1986, "", "Sophie Hatter, cursed into old age, bargains with the fire demon Calcifer in the wizard Howl's castle", "funny cozy young", []],
-  ["Piranesi", "Susanna Clarke", 2020, "", "a gentle man lives alone in an endless House of statues and tides", "strange gentle short", []],
-  ["Jonathan Strange & Mr Norrell", "Susanna Clarke", 2004, "", "two magicians bring English magic back during the Napoleonic Wars", "historical", ["Jonathan Strange and Mr Norrell"]],
-  ["A Game of Thrones", "George R.R. Martin", 1996, "A Song of Ice and Fire", "noble houses fight for the Iron Throne of Westeros while winter and dragons return", "dark political dragons epic", ["Game of Thrones", "A Song of Ice and Fire"]],
-  ["The Lies of Locke Lamora", "Scott Lynch", 2006, "Gentleman Bastard", "Locke and his band of con artists rob the nobles of the city of Camorr", "heist funny", []],
-  ["The Blade Itself", "Joe Abercrombie", 2006, "The First Law", "a torturer, a barbarian and a vain nobleman are drawn into a war", "dark funny", ["First Law"]],
-  ["The Priory of the Orange Tree", "Samantha Shannon", 2019, "", "queens, mages and dragon riders face a waking fire-breathing beast", "dragons epic romance", []],
-  ["The House in the Cerulean Sea", "TJ Klune", 2020, "", "caseworker Linus Baker inspects an island orphanage for magical children", "cozy funny gentle", []],
-  ["Legends & Lattes", "Travis Baldree", 2022, "", "Viv, an orc mercenary, retires to open the first coffee shop in town", "cozy gentle", ["Legends and Lattes"]],
-  ["The Night Circus", "Erin Morgenstern", 2011, "", "two young magicians, Celia and Marco, are bound to a duel inside a circus that opens only at night", "romance atmospheric", []],
-  ["The Starless Sea", "Erin Morgenstern", 2019, "", "a graduate student finds a strange book in his university library that contains a story from his own childhood", "atmospheric", []],
-  ["Circe", "Madeline Miller", 2018, "", "the witch Circe of Greek myth, exiled to the island of Aiaia, finds her own power", "myth", []],
-  ["The Song of Achilles", "Madeline Miller", 2011, "", "the Trojan War told by Patroclus, companion and beloved of Achilles", "myth romance", []],
-  ["Harry Potter and the Philosopher's Stone", "J.K. Rowling", 1997, "Harry Potter", "Harry learns he is a wizard and begins his first year at Hogwarts (called the Sorcerer's Stone in the US)", "school young", ["Harry Potter and the Sorcerer's Stone", "Harry Potter"]],
-  ["Eragon", "Christopher Paolini", "", "The Inheritance Cycle", "a farm boy finds a dragon egg, and the dragon Saphira hatches for him", "dragons young", []],
-  ["Dragonflight", "Anne McCaffrey", 1968, "Dragonriders of Pern", "Lessa bonds with a queen dragon on the world of Pern", "dragons classic", ["Dragonriders of Pern"]],
-  ["The Once and Future King", "T.H. White", 1958, "", "the life of King Arthur, from boyhood lessons with Merlyn to the fall of Camelot", "classic myth", ["The Sword in the Stone"]],
-  ["The Princess Bride", "William Goldman", 1973, "", "Buttercup and the farm boy Westley, with giants, swordsmen and true love", "funny romance adventure", []],
-  ["The Neverending Story", "Michael Ende", 1979, "", "Bastian reads a stolen book and is drawn into the land of Fantastica", "young classic", []],
-  ["Alice's Adventures in Wonderland", "Lewis Carroll", 1865, "", "Alice follows a White Rabbit down a hole into Wonderland", "classic young funny", ["Alice in Wonderland"]],
-  ["The Wonderful Wizard of Oz", "L. Frank Baum", 1900, "", "Dorothy is carried by a cyclone to Oz and follows the yellow brick road", "classic young", ["The Wizard of Oz"]],
-  ["A Darker Shade of Magic", "V.E. Schwab", 2015, "Shades of Magic", "Kell, one of the last magicians who can travel between parallel Londons", "adventure", []],
-  ["The Invisible Life of Addie LaRue", "V.E. Schwab", 2020, "", "a woman makes a bargain to live forever but be forgotten by everyone she meets", "romance bittersweet", ["Addie LaRue"]],
-  ["Six of Crows", "Leigh Bardugo", 2015, "", "Kaz Brekker leads six outcasts on an impossible heist", "heist young", []],
-  ["Shadow and Bone", "Leigh Bardugo", 2012, "", "Alina Starkov discovers a rare power to summon light", "young", []],
-  ["The Poppy War", "R.F. Kuang", 2018, "", "war orphan Rin tests into an elite military academy and discovers shamanic power", "dark school", []],
-  ["Babel", "R.F. Kuang", 2022, "", "Robin Swift studies at Oxford's translation institute, where magic is worked through silver", "dark school historical", []],
-  ["The Goblin Emperor", "Katherine Addison", 2014, "", "Maia, a shy half-goblin prince, unexpectedly becomes emperor", "gentle political cozy", []],
-  ["The Bear and the Nightingale", "Katherine Arden", 2017, "Winternight", "Vasya, in medieval Russia, can see the household spirits that protect her village", "fairytale winter", []],
-  ["Children of Blood and Bone", "Tomi Adeyemi", 2018, "", "Zélie fights to bring magic back to the land of Orïsha", "young", []],
-  ["Gideon the Ninth", "Tamsyn Muir", 2019, "The Locked Tomb", "a sword-loving swordswoman serves a necromancer in a deadly trial inside a haunted palace", "dark funny", []],
-  ["The Black Company", "Glen Cook", 1984, "", "a band of mercenaries serves a sorceress called the Lady", "dark", []],
-  ["Tigana", "Guy Gavriel Kay", 1990, "", "rebels fight a sorcerer who has erased the very name of their homeland", "bittersweet political", []],
-  ["Sabriel", "Garth Nix", 1995, "The Old Kingdom", "Sabriel, daughter of the necromancer Abhorsen, crosses into the Old Kingdom to find her father", "young dark", []],
-  ["The Golem and the Jinni", "Helene Wecker", 2013, "", "a golem and a jinni meet in New York in 1899", "historical gentle", []],
-  ["Redwall", "Brian Jacques", 1986, "Redwall", "the mice of Redwall Abbey defend their home from the rat warlord Cluny", "young cozy adventure", []],
-  ["Watership Down", "Richard Adams", 1972, "", "a band of rabbits seeks a new home after their warren is destroyed", "classic adventure", []],
-  ["The Dark Is Rising", "Susan Cooper", 1973, "The Dark Is Rising", "on his eleventh birthday Will Stanton learns he is the last of the Old Ones", "young winter", []],
-  ["The Book of Three", "Lloyd Alexander", 1964, "The Chronicles of Prydain", "Taran, an assistant pig-keeper, sets out after a runaway oracular pig", "young classic", ["Prydain"]],
-  ["Dealing with Dragons", "Patricia C. Wrede", 1990, "The Enchanted Forest Chronicles", "the bored Princess Cimorene runs away to keep house for a dragon", "funny cozy dragons young", []],
-  ["Ella Enchanted", "Gail Carson Levine", 1997, "", "Ella, cursed at birth to always obey, sets out to break the spell", "funny fairytale young", []],
-  ["Seraphina", "Rachel Hartman", 2012, "", "a musician hides her secret in a kingdom where dragons can take human form", "dragons young", []],
-  ["Throne of Glass", "Sarah J. Maas", 2012, "", "the assassin Celaena Sardothien competes to become the king's champion", "young", []],
-  ["A Court of Thorns and Roses", "Sarah J. Maas", 2015, "", "the huntress Feyre is taken into the faerie lands of Prythian", "romance fairytale", []],
-  ["Fourth Wing", "Rebecca Yarros", 2023, "The Empyrean", "Violet Sorrengail is forced into a war college for dragon riders", "dragons romance school", []],
-  ["The Lightning Thief", "Rick Riordan", 2005, "Percy Jackson and the Olympians", "Percy Jackson learns he is the son of Poseidon", "myth young funny", ["Percy Jackson"]],
-  ["The Last Wish", "Andrzej Sapkowski", 1993, "The Witcher", "stories of Geralt of Rivia, a monster hunter for hire", "dark short", ["The Witcher"]],
-  ["Gardens of the Moon", "Steven Erikson", 1999, "Malazan Book of the Fallen", "the Malazan Empire's campaign against the free city of Darujhistan", "epic dark", ["Malazan"]],
-  ["Magician", "Raymond E. Feist", 1982, "The Riftwar Saga", "the orphan Pug trains as a magician when invaders come through a rift", "epic school", []],
-  ["Pawn of Prophecy", "David Eddings", 1982, "The Belgariad", "the farm boy Garion learns his family is far stranger than he knew", "quest classic", ["Belgariad"]],
-  ["The Sword of Shannara", "Terry Brooks", 1977, "Shannara", "Shea Ohmsford, a half-elf, is the last heir who can wield a legendary sword", "quest classic elves", []],
-  ["The City of Brass", "S.A. Chakraborty", 2017, "The Daevabad Trilogy", "Nahri, a con artist in Cairo, is pulled into the djinn city of Daevabad", "political myth", []],
-  ["Jade City", "Fonda Lee", 2017, "The Green Bone Saga", "the Kaul family's clan of jade-powered warriors in a gangster war", "dark political", []],
-  ["Nettle & Bone", "T. Kingfisher", 2022, "", "a quiet nun sets out with a gravewitch and a dust-dog to kill a cruel prince", "funny dark fairytale", ["Nettle and Bone"]],
-  ["A Wizard's Guide to Defensive Baking", "T. Kingfisher", 2020, "", "Mona, a fourteen-year-old who can work magic only on bread, must defend her city", "funny cozy young", []],
-  ["The Ten Thousand Doors of January", "Alix E. Harrow", 2019, "", "January Scaller finds a book about doors that lead to other worlds", "atmospheric", []],
-  ["Titus Groan", "Mervyn Peake", 1946, "Gormenghast", "the birth of Titus, heir to the vast, crumbling castle of Gormenghast", "strange classic", ["Gormenghast"]],
-  ["Lud-in-the-Mist", "Hope Mirrlees", 1926, "", "a staid town that has banned fairy fruit finds it smuggled across the border", "fairytale classic strange", []],
-  ["The King of Elfland's Daughter", "Lord Dunsany", 1924, "", "a mortal prince weds the daughter of the king of Elfland", "elves fairytale classic", []],
-  ["The Broken Sword", "Poul Anderson", 1954, "", "a changeling raised by elves, and a cursed sword, in a war between elves and trolls", "elves dark classic", []],
-  ["The Cruel Prince", "Holly Black", 2018, "The Folk of the Air", "Jude, a mortal girl raised in the High Court of Faerie, schemes for power", "fairytale young political elves", []],
-].map(([title, author, year, series, about, tags, aliases]) => ({ title, author, year, series, about, tags: tags.split(" "), aliases }));
+// Libby's library is the gameofbooks database (books/fantasy_novels.json, copied with tools/sync-books.sh).
+// Each book has a title, authors, whether it is a book or a series, and trope tags. There are no plot
+// summaries, so Libby describes books only through their tropes and never invents a story.
+let CATALOG = [];
 
-// Books whose heart is a wizard, witch or magician.
-const WIZARDLY = ["A Wizard of Earthsea", "The Name of the Wind", "The Night Circus", "Jonathan Strange & Mr Norrell", "Magician",
-  "Howl's Moving Castle", "A Darker Shade of Magic", "The Colour of Magic", "A Deadly Education", "Harry Potter and the Philosopher's Stone",
-  "Circe", "Uprooted", "The Once and Future King", "A Wizard's Guide to Defensive Baking", "Sabriel"];
-for (const b of CATALOG) if (WIZARDLY.includes(b.title)) b.tags.push("wizards");
-
-const MOODS = {
-  funny: /\b(funny|humou?r|laugh|comic|comedy|witty|silly|hilarious)/i,
-  cozy: /\b(cozy|cosy|comfort|wholesome|heart-?warming|soothing|relaxing|light|feel-?good)/i,
-  gentle: /\b(gentle|kind|soft|calm|quiet|peaceful)/i,
-  dragons: /\bdragons?\b/i,
-  dark: /\b(dark|grim|grimdark|gritty|brutal|bleak|scary|horror|creepy)/i,
-  romance: /\b(romance|romantic|love story|swoon)/i,
-  young: /\b(kids?|child|children|young|teen|ya|middle[- ]grade|my (son|daughter|nephew|niece))\b/i,
-  school: /\b(school|academy|student|university|college)/i,
-  heist: /\b(heist|thie(f|ves)|con ?artist|caper)/i,
-  epic: /\b(epic|long series|sweeping|big series|huge world)/i,
-  fairytale: /\b(fairy[- ]?tales?|folk ?tales?|faerie|fae)\b/i,
-  myth: /\b(myths?|mythology|greek|norse|gods?)\b/i,
-  short: /\b(short|quick read|novella|small book)/i,
-  elves: /\b(elf|elves|elven|elfland)\b/i,
-  winter: /\b(winter|snow|cold|frost)/i,
-  classic: /\b(classic|old book|older)/i,
-  political: /\b(politic|court intrigue|intrigue|scheming)/i,
-  quest: /\b(quest|journey|adventure)/i,
-  wizards: /\b(wizards?|witch(es)?|magicians?|sorcer(er|ess|y)|mages?|spells?)\b/i,
+// How each trope tag reads in a sentence.
+const TROPE_WORDS = {
+  "chosen-one": "a chosen one", "coming-of-age": "coming of age", "court-intrigue": "court intrigue", cozy: "a cozy heart",
+  dragons: "dragons", "dreamlike-literary": "dreamlike, literary prose", "epic-quest": "an epic quest", faerie: "the realm of faerie",
+  "fairy-tale-retelling": "a fairy tale retold", "found-family": "found family", "good-vs-evil": "good against evil",
+  "gothic-horror": "gothic shadows", grimdark: "grim, dark deeds", "high-seas": "the high seas",
+  "historical-fantasy": "history touched by magic", humor: "humour", "magic-school": "a school of magic", mystery: "a mystery",
+  "myths-and-legends": "myths and legends", "non-european-settings": "lands beyond the old European tales",
+  "portal-world": "a door into another world", "rogues-and-thieves": "rogues and thieves", romance: "romance",
+  "sword-and-sorcery": "sword and sorcery", "talking-animals": "talking animals", "urban-fantasy": "magic in a modern city",
+  "war-and-armies": "war and armies", witchcraft: "witchcraft", "young-readers": "a tale for young readers",
 };
+const listWords = (w) => (w.length > 1 ? w.slice(0, -1).join(", ") + " and " + w.at(-1) : w[0] || "");
+const authorList = (b) => listWords(b.authors);
+
+/** Turn the database into Libby's catalog. Returns the number of books. */
+function loadLibrary(db) {
+  CATALOG = (db.books || []).map((r) => ({
+    id: r.id,
+    title: r.title,
+    authors: r.authors || [],
+    author: listWords(r.authors || []),
+    kind: r.type === "series" ? "series" : "book",
+    year: null,
+    series: "",
+    tags: r.tags || [],
+    about: listWords((r.tags || []).map((t) => TROPE_WORDS[t] || t.replace(/-/g, " "))),
+    aliases: r.aliases || [],
+    status: r.reading?.status || "unread",
+    rating: r.reading?.rating ?? null,
+  }));
+  return CATALOG.length;
+}
+
+// Visitor's words → the database's trope tags.
+const MOODS = {
+  humor: /\b(funny|humou?r|laugh|comic|comedy|witty|silly|hilarious)/i,
+  cozy: /\b(cozy|cosy|comfort|wholesome|heart-?warming|soothing|relaxing|gentle|feel-?good)/i,
+  dragons: /\bdragons?\b/i,
+  grimdark: /\b(dark|grim|grimdark|gritty|brutal|bleak)/i,
+  "gothic-horror": /\b(gothic|horror|scary|creepy|ghosts?|haunted|vampires?)/i,
+  romance: /\b(romance|romantic|love story|swoon)/i,
+  "young-readers": /\b(kids?|child|children|young readers?|middle[- ]grade|my (son|daughter|nephew|niece))\b/i,
+  "magic-school": /\b(school|academy|students?|university|college|apprentice)/i,
+  "rogues-and-thieves": /\b(heists?|thie(f|ves)|rogues?|con ?artists?|caper|assassins?)/i,
+  "epic-quest": /\b(epic|quests?|journey|adventure)/i,
+  "fairy-tale-retelling": /\b(fairy[- ]?tales?|retellings?|folk ?tales?)\b/i,
+  faerie: /\b(faerie|fae|fairies|elf|elves|elven|elfland)\b/i,
+  "myths-and-legends": /\b(myths?|mythology|legends?|greek|norse|gods?|arthurian|king arthur)\b/i,
+  "court-intrigue": /\b(politic\w*|courts?|intrigue|scheming|thrones?)\b/i,
+  "war-and-armies": /\b(war|wars|armies|army|battles?|soldiers?)\b/i,
+  witchcraft: /\b(witch(es|craft)?|spells?|wizards?|magicians?|mages?|sorcer(er|ess|ers))\b/i,
+  "portal-world": /\b(portals?|another world|other worlds?|door to|wardrobe)/i,
+  "found-family": /\b(found family|friendship|friends|companions)/i,
+  mystery: /\b(myster(y|ies)|detectives?|whodunn?it|puzzles?)/i,
+  "talking-animals": /\b(talking animals?|animals?|cats?|mice|rabbits?|foxes|badgers?)\b/i,
+  "high-seas": /\b(seas?|oceans?|pirates?|ships?|sailing|sailors?)\b/i,
+  "urban-fantasy": /\b(urban|modern|city|cities|london|new york|contemporary)\b/i,
+  "historical-fantasy": /\b(historical|history|victorian|regency|medieval)\b/i,
+  "chosen-one": /\b(chosen one|prophec(y|ies)|destiny|destined)\b/i,
+  "coming-of-age": /\b(coming[- ]of[- ]age|growing up|teens?|young adult|ya)\b/i,
+  "dreamlike-literary": /\b(literary|dreamlike|dreamy|lyrical|poetic|beautiful prose|strange)\b/i,
+  "sword-and-sorcery": /\b(sword and sorcery|barbarians?|swords?|sorcery)\b/i,
+  "good-vs-evil": /\b(good (vs\.?|versus|against) evil|dark lord|evil)\b/i,
+  "non-european-settings": /\b(african|asian|chinese|japanese|korean|indian|middle eastern|arabian|non-european|caribbean)\b/i,
+};
+// Well-known books to offer when a message gives nothing to match on (a greeting, an off-topic question).
+const STARTER_SHELF = ["The Hobbit", "Earthsea", "Howl's Moving Castle", "Discworld", "The Chronicles of Narnia", "Redwall",
+  "Legends & Lattes", "The Last Unicorn", "His Dark Materials", "The King of Elfland's Daughter", "Stardust", "Coraline"];
 const RECOMMEND = /\b(recommend|suggest|anything|what (should|can|could) i read|read next|looking for|in the mood|give me|find me|any (good )?books?|a book|something|similar|like that|another)\b/i;
 const ASKS_ABOUT = /\b(who wrote|author of|written by|what('s| is) .* about|have you read|do you know|tell me about|is .* good)\b/i;
 const FAVOURITE = /\bfavou?rite\b/i;
 const OFF_TOPIC = /\b(car|cars|brakes?|engine|tyres?|tires?|code|coding|program(ming)?|python|javascript|computer|laptop|phone|wifi|doctor|medicine|health|pain|sick|tax(es)?|money|invest(ing)?|stocks?|news|weather|recipe|math|homework|lawyer|legal)\b/i;
 const BOOKISH = /\b(book|books|read|reading|novel|story|stories|author|tale|series|fantasy|library|shelf)\b/i;
-// Surnames that are also ordinary words or very common names: match these only by full name.
-const AMBIGUOUS_SURNAMES = new Set(["white", "black", "lee", "miller", "jordan", "adams", "cook", "kay", "nix", "lynch", "martin", "brooks", "carroll", "lewis", "ende", "baum", "black", "jones", "kingfisher", "alexander", "levine"]);
+// Surnames that are also ordinary words or very common names: these match only by the author's full name.
+const AMBIGUOUS_SURNAMES = new Set(("adams alexander anderson anthony armstrong bailey barker barry bell bishop black brown bull bunch butler card " +
+  "carter cast chant chambers cook cooper cross dean dexter edwards farmer forward gardner hunt hunter holt howard jackson jacobs johnson " +
+  "jones jordan joyce kay king lee lewis lynch martin mead messenger meyer mills mitchell morgan morris myers nathan parks parry pope powers " +
+  "pratt read rey ruff ryan sage scott smith snow steer stephens stewart thompson walton warner wells white williams wilson winter wolf " +
+  "wright yang young various britain fan gong mari prue nix bok ende baum carroll miller brooks levine").split(" "));
 
 const norm = (s) => s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ").trim();
-const surname = (name) => norm(name.split(" and ")[0]).split(" ").at(-1);
-const authorsOf = (b) => b.author.split(" and ").map((a) => a.trim());
+const surname = (name) => norm(name).split(" ").at(-1);
+const authorsOf = (b) => b.authors;
+const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-// Does `text` mention this title? Single-word titles ("Mort", "Magician") must be capitalised, to avoid
-// matching ordinary words.
+// Does `text` mention this title? Single-word titles ("Earthsea", "Beauty") must be capitalised, so ordinary
+// words don't match.
 function mentionsTitle(text, b) {
   const n = " " + norm(text) + " ";
   return [b.title, ...b.aliases].some((t) => {
     const k = norm(t).replace(/^the /, "");
     if (!k) return false;
-    if (!k.includes(" ")) return new RegExp(`\\b${t.replace(/^The /, "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(text);
+    if (!k.includes(" ")) return new RegExp(`\\b${esc(t.replace(/^The /, ""))}\\b`).test(text);
     return n.includes(" " + k + " ");
   });
 }
 function mentionsAuthor(text, author) {
   const n = " " + norm(text) + " ";
   if (n.includes(" " + norm(author) + " ")) return true;
-  const s = surname(author);
-  if (AMBIGUOUS_SURNAMES.has(s)) return false;
-  return new RegExp(`\\b${author.split(" ").at(-1).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(text);
+  if (AMBIGUOUS_SURNAMES.has(surname(author))) return false;
+  return new RegExp(`\\b${esc(author.split(" ").at(-1))}\\b`).test(text);
 }
 
-const line = (b) => `- ${b.title} by ${b.author}${b.year ? ` (${b.year})` : ""}${b.series ? `, in the ${b.series.replace(/^The /, "")} series` : ""}: ${b.about}.`;
+const line = (b) => `- ${b.title} by ${b.author} (a ${b.kind}). Its themes: ${b.about}.` +
+  (b.rating ? ` The reader rated it ${b.rating} out of 5.` : "") + (b.status === "read" ? " The reader has already read it." : "");
+// "*The Hobbit* by …", "the *Earthsea* series by …", "*The Wheel of Time* series by …", "the *Dragonlance Chronicles* by …"
+function cite(b) {
+  const t = `*${b.title}*`;
+  if (b.kind !== "series") return `${t} by ${b.author}`;
+  const named = /\b(series|trilogy|chronicles?|saga|cycle|sequence|quartet|duology|books|tales|novels)\b/i.test(b.title);
+  const the = /^(the|a|an) /i.test(b.title) ? "" : "the ";
+  return named ? `${the}${t} by ${b.author}` : `${the}${t} series by ${b.author}`;
+}
+const pickOne = (list) => list[Math.floor(Math.random() * list.length)];
 
-/** Pick the facts for this turn and say what to do with them. */
+/** Pick the facts for this turn, the book to offer, and the true opening of Libby's reply. */
 function lorePrompt(message, history, recommended) {
   const named = CATALOG.filter((b) => mentionsTitle(message, b));
-  const byAuthor = CATALOG.filter((b) => !named.includes(b) && authorsOf(b).some((a) => mentionsAuthor(message, a)));
+  const byAuthor = CATALOG.filter((b) => !named.includes(b) && b.authors.some((a) => mentionsAuthor(message, a)));
   const moods = Object.keys(MOODS).filter((m) => MOODS[m].test(message));
   const wantsBook = RECOMMEND.test(message) || moods.length > 0;
+  const available = (b) => !named.includes(b) && !recommended.has(b.title) && b.status !== "read" && b.status !== "dnf";
 
   const facts = [...named.slice(0, 3), ...byAuthor.slice(0, 4 - Math.min(named.length, 3))];
   let pick = null;
   if (wantsBook || FAVOURITE.test(message) || OFF_TOPIC.test(message) || (!named.length && !byAuthor.length)) {
-    // Score every unrecommended book by shared moods with the request and with any books named in it.
+    // Score every available book by the tropes it shares with the request and with any book named in it.
     const wanted = new Set([...moods, ...named.flatMap((b) => b.tags)]);
-    const pool = CATALOG.filter((b) => !named.includes(b) && !recommended.has(b.title));
-    const scored = pool.map((b) => ({ b, s: b.tags.filter((t) => wanted.has(t)).length + (moods.every((m) => b.tags.includes(m)) && moods.length ? 2 : 0) }));
+    const scored = CATALOG.filter(available).map((b) => ({
+      b, s: b.tags.filter((t) => wanted.has(t)).length + (moods.length && moods.every((m) => b.tags.includes(m)) ? 2 : 0),
+    }));
     const best = Math.max(0, ...scored.map((x) => x.s));
-    const top = scored.filter((x) => x.s === best && (best > 0 || x.b.tags.includes("classic") || x.b.tags.includes("cozy")));
-    const fromAuthor = byAuthor.filter((b) => !recommended.has(b.title));
-    if (FAVOURITE.test(message) && !moods.length && !named.length) pick = CATALOG.find((b) => b.title === "The King of Elfland's Daughter");
-    else if (wantsBook && fromAuthor.length) pick = fromAuthor[Math.floor(Math.random() * fromAuthor.length)];
-    else pick = top.length ? top[Math.floor(Math.random() * top.length)].b : null;
+    const top = best > 0 ? scored.filter((x) => x.s === best).map((x) => x.b) : CATALOG.filter((b) => available(b) && STARTER_SHELF.includes(b.title));
+    const fromAuthor = byAuthor.filter(available);
+    const favourite = CATALOG.find((b) => b.title === "The King of Elfland's Daughter");
+    if (FAVOURITE.test(message) && !moods.length && !named.length && favourite) pick = favourite;
+    else if (wantsBook && fromAuthor.length) pick = pickOne(fromAuthor);
+    else pick = top.length ? pickOne(top) : null;
   }
   if (pick && !facts.includes(pick)) facts.push(pick);
 
   const lines = [];
-  if (facts.length) lines.push("True facts from your shelves for this reply:", ...facts.map(line));
+  if (facts.length) {
+    lines.push("True facts from your shelves for this reply:", ...facts.map(line),
+      "You know these books only by their themes. Describe them through those themes; never invent plots, characters, places or dates.");
+  }
   if (pick && FAVOURITE.test(message) && !moods.length) lines.push(`If asked for your favourite, it is ${pick.title} by ${pick.author}, because you are an elf yourself.`);
   else if (pick && (wantsBook || !named.length)) lines.push(`If you recommend a book, recommend ${pick.title} by ${pick.author}.`);
   if (!named.length && !byAuthor.length && ASKS_ABOUT.test(message)) {
-    lines.push("The reader asked about a book that is not on your shelves. Say softly that you do not know it well; do not guess its author or story.");
+    lines.push("The reader asked about a book that is not on your shelves. Say softly that you do not know it; do not guess its author or story.");
   }
   lines.push("Name no other books or authors than these.");
 
   // Start Libby's reply with the true title and author, so the model only has to continue in her voice.
-  const cite = (b) => `*${b.title}* by ${b.author}`;
   const openers = ["Oh, I know just the one:", "Then let me draw a true book from my shelves:", "The pages are already rustling for", "Come closer, I have one for you:"];
   let prefix = "";
   const unknownAsked = !named.length && !byAuthor.length && ASKS_ABOUT.test(message);
@@ -785,9 +941,13 @@ function lorePrompt(message, history, recommended) {
   if (offTopic && pick) prefix = `Alas, that is beyond my scroll, for I know only ink and the tales it holds. But if you'd like a story for the wait, there is ${cite(pick)}`;
   else if (pick && FAVOURITE.test(message) && !moods.length && !named.length) prefix = `If I must choose just one, it is ${cite(pick)}`;
   else if (unknownAsked && pick) prefix = `I'm afraid that one isn't written in my scroll, and I won't guess at its story. If you'd like a true tale instead, there is ${cite(pick)}`;
-  else if (named.length && ASKS_ABOUT.test(message) && !RECOMMEND.test(message)) prefix = `*${named[0].title}* was written by ${named[0].author}`;
-  else if (pick && wantsBook) prefix = `${openers[Math.floor(Math.random() * openers.length)]} ${cite(pick)}`;
-  return { text: lines.join("\n"), pick: prefix || wantsBook ? pick : null, prefix };
+  else if (named.length && ASKS_ABOUT.test(message) && !RECOMMEND.test(message)) {
+    const b = named[0];
+    prefix = b.kind === "series" ? `*${b.title}* is a series written by ${b.author}` : `*${b.title}* was written by ${b.author}`;
+  } else if (pick && wantsBook) prefix = `${pickOne(openers)} ${cite(pick)}`;
+  if (prefix && !/[.!?]$/.test(prefix)) prefix += ".";
+  const subject = prefix.startsWith(`*${named[0]?.title}*`) ? named[0] : pick;   // the book the opening names
+  return { text: lines.join("\n"), pick: prefix || wantsBook ? pick : null, prefix, subject };
 }
 
 /**
@@ -795,6 +955,15 @@ function lorePrompt(message, history, recommended) {
  * after the first title that isn't in the catalog cut away. Returns any unknown titles that remain.
  */
 function finalize(raw, lore) {
+  const result = cutUnknown(raw, lore);
+  // If she stopped right after the true opening, finish with what the database says about the book.
+  const keep = lore?.prefix?.length || 0, subject = lore?.subject;
+  if (keep && subject?.about && result.text.length < keep + 25 && !result.text.includes("In its pages")) {
+    result.text = `${result.text.replace(/\s*$/, "")} In its pages you'll find ${subject.about}.`;
+  }
+  return result;
+}
+function cutUnknown(raw, lore) {
   const first = checkFacts(tidy(raw));
   if (!first.unknown.length) return first;
   const t = first.text;
@@ -812,7 +981,7 @@ function finalize(raw, lore) {
   let text = t.slice(0, cutAt).trim();
   if (!text) return first;
   if (!/[.!?…]["”’)*]*$/.test(text)) text += ".";
-  if (lore?.pick && text.length < keep + 60) text += ` In its pages, ${lore.pick.about}.`;
+  if (lore?.subject && text.length < keep + 60) text += ` In its pages you'll find ${lore.subject.about}.`;
   return checkFacts(text);
 }
 
@@ -852,13 +1021,16 @@ function checkFacts(reply) {
     // Drop sentence openers that precede a title ("Try Mistborn by …", "Perhaps The Hobbit by …").
     const c = raw.replace(/^(?:(?:Try|Read|Consider|Perhaps|Maybe|Ah|Oh|Then|And|But|So|Also|Pick|Grab|Explore|Discover|Enjoy|Or|Yes|Well|Next)\b[\s,]*)+/, "");
     const n = norm(c);
-    if (n.split(" ").length < 2 || n.length < 6) continue;
+    const quoted = !/\sby\s/.test(raw) && /^[A-Z][a-z]{4,}$/.test(c);   // a one-word title in *italics* or "quotes"
+    if (!quoted && (n.split(" ").length < 2 || n.length < 6)) continue;
     // Must look like a title (mostly capitalised words), not an italic stage direction.
     const words = c.split(/\s+/).filter((w) => w.length > 3);
     if (words.length && words.filter((w) => /^[A-Z]/.test(w)).length / words.length < 0.6) continue;
     const known = CATALOG.some((b) => {
       const keys = [b.title, b.series, ...b.aliases].filter(Boolean).map(norm).sort((x, y) => y.length - x.length);
       if (keys.some((k) => k.includes(n))) return true;              // a shortened real title
+      // A book inside a series the database lists as one entry ("A Wizard of Earthsea" in Earthsea).
+      if (b.kind === "series" && keys.some((k) => k.length >= 5 && (" " + n + " ").includes(" " + k + " "))) return true;
       let rest = " " + n + " ";
       for (const k of keys) rest = rest.replace(" " + k + " ", " ");
       return !rest.replace(/\b(the|a|an|of|and|book|one|two|series|saga|trilogy|cycle|chronicles?)\b/g, "").trim();
@@ -870,7 +1042,12 @@ function checkFacts(reply) {
 }
 /** Keep replies as prose: drop any list she slides into, and end on the last full sentence. */
 function tidy(text) {
-  let t = text.trim();
+  // No web links in a scroll: remove them, and any sentence that talks about websites.
+  let t = text.replace(/\b(?:https?:\/\/|www\.)\S+|\S+\.(?:com|org|net)\b\S*|\[here\]/gi, "");
+  // Libby writes a short note: keep her first paragraph when she runs on.
+  const para = t.trim().split(/\n\s*\n/);
+  if (para.length > 1 && para[0].length >= 60) t = para[0];
+  t = t.split(/(?<=[.!?…])\s+/).filter((x) => !/\b(online|websites?|webpages?|amazon|internet|google)\b/i.test(x)).join(" ").replace(/[ \t]{2,}/g, " ").trim();
   const list = t.search(/\n\s*(\d+\.|[-*•])\s/);
   if (list > 40) t = t.slice(0, list).trim();
   if (!/[.!?…"”’)*~]$/.test(t)) {
@@ -893,81 +1070,139 @@ let history = [];
 let busy = false;
 let ready = false;
 let current = null;              // the reply Libby is writing into
+let device = null;               // "webgpu" or "wasm", once known
 const recommended = new Set();   // titles already offered, so she suggests something new each time
 
 // ── Libby's portrait: hair strands drawn with a fixed seed, so she looks the same on every visit ──
-(function drawPortrait() {
+// ── Painting: Libby's watercolour portrait, the flowers, the quill and the wax seal ──
+// Everything is drawn with a fixed seed, so the paintings look the same on every visit.
+(function paint() {
   const NS = "http://www.w3.org/2000/svg";
-  let seed = 20240611;
+  let seed = 20241115;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
   const add = (parent, tag, attrs) => { const el = document.createElementNS(NS, tag); for (const k in attrs) el.setAttribute(k, attrs[k]); parent.appendChild(el); return el; };
-  const back = $("hair-back"), front = $("hair-front"), deco = $("hair-deco"), sparkles = $("sparkles");
-
-  // Smooth curve through points (Catmull-Rom → cubic Bézier).
-  const smooth = (pts) => {
-    let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
-    for (let i = 0; i < pts.length - 1; i++) {
-      const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
-      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
-      const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
-      d += `C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  // Smooth curve through points (Catmull-Rom → cubic Bézier); `closed` joins the end back to the start.
+  const smooth = (pts, closed = false) => {
+    const P = closed ? [pts.at(-1), ...pts, pts[0], pts[1]] : [pts[0], ...pts, pts.at(-1)];
+    let d = `M${P[1][0].toFixed(1)} ${P[1][1].toFixed(1)}`;
+    for (let i = 1; i < P.length - 2; i++) {
+      const [p0, p1, p2, p3] = [P[i - 1], P[i], P[i + 1], P[i + 2]];
+      d += `C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
     }
-    return d;
+    return d + (closed ? "Z" : "");
   };
-  const inkFor = () => { const r = rnd(); return r < 0.45 ? "p-strand soft" : r < 0.7 ? "p-strand" : r < 0.93 ? "p-strand lit" : "p-strand glint"; };
-  // One strand: from the crown, around the head, then falling in slow waves that widen towards the hem.
-  const strand = (side, sx, sy, outer, drift) => {
-    const phase = rnd() * 6.28, offset = (rnd() - 0.4) * 16, pts = [[sx, sy]];
-    for (let y = sy + 14; y <= 256; y += 14) {
+  // The centre line of a lock of hair: from the crown, around the head, then falling in slow waves.
+  const flow = (side, sx, sy, outer, drift, phase, offset, step = 12) => {
+    const pts = [[sx, sy]];
+    for (let y = sy + step; y <= 262; y += step) {
       const t = Math.min(1, (y - sy) / 46);
       const fall = outer + side * (y > 100 ? (y - 100) * (0.2 + drift) : 0);
       const head = sx + (fall - sx) * (1 - (1 - t) * (1 - t));
-      const wave = Math.sin(y / 21 + phase) * (1 + (y - 60) / 40);
+      const wave = Math.sin(y / 22 + phase) * (1 + (y - 60) / 38);
       pts.push([head + side * offset * (0.25 + (y - 60) / 200) + wave, y]);
     }
-    return smooth(pts);
+    return pts;
   };
-  // Behind: both sides of the head, flowing past the shoulders.
-  for (let i = 0; i < 90; i++) {
+  // A lock as a filled ribbon: narrow at the crown, widening towards the ends.
+  const lock = (centre, w0, w1) => {
+    const n = centre.length - 1;
+    const left = centre.map(([x, y], i) => [x - (w0 + (w1 - w0) * (i / n)) / 2, y]);
+    const right = centre.map(([x, y], i) => [x + (w0 + (w1 - w0) * (i / n)) / 2, y]).reverse();
+    return smooth([...left, ...right], true);
+  };
+  const paints = ["url(#g-hair)", "url(#g-hair)", "url(#g-hair)", "var(--p-hair-1)", "var(--p-hair-2)", "var(--p-hair-3)", "url(#g-hair-light)"];
+
+  // Hair behind: broad translucent washes on both sides, layered for depth.
+  const back = document.getElementById("hair-back");
+  add(back, "path", { d: "M104 46C64 46 52 88 58 124 60 166 34 210 14 256H192C172 212 150 166 150 124 152 86 144 46 104 46Z", fill: "url(#g-hair)", opacity: ".85" });
+  for (let i = 0; i < 18; i++) {
     const left = i % 2 === 0, s0 = rnd();
-    const d = left ? strand(-1, 104 - 22 * s0, 51 + 24 * s0 * s0, 72, rnd() * 0.14) : strand(1, 106 + 22 * s0, 51 + 24 * s0 * s0, 138, rnd() * 0.14);
-    add(back, "path", { d, class: inkFor(), "stroke-width": (0.3 + rnd() * 0.6).toFixed(2), opacity: (0.3 + rnd() * 0.5).toFixed(2) });
+    const c = left ? flow(-1, 102 - 20 * s0, 50 + 22 * s0 * s0, 70 + rnd() * 6, rnd() * 0.16, rnd() * 6.3, (rnd() - 0.35) * 18)
+      : flow(1, 108 + 20 * s0, 50 + 22 * s0 * s0, 136 + rnd() * 6, rnd() * 0.16, rnd() * 6.3, (rnd() - 0.35) * 18);
+    add(back, "path", { d: lock(c, 3 + rnd() * 4, 12 + rnd() * 16), fill: paints[Math.floor(rnd() * paints.length)], opacity: (0.4 + rnd() * 0.35).toFixed(2) });
   }
-  // A few loose strands drifting outward, as if in water or starlight.
-  for (let i = 0; i < 8; i++) {
-    const left = i % 2 === 0;
-    add(back, "path", { d: strand(left ? -1 : 1, left ? 96 : 114, 56, left ? 66 : 144, 0.22 + rnd() * 0.12), class: "p-strand lit", "stroke-width": "0.45", opacity: (0.35 + rnd() * 0.3).toFixed(2) });
+
+  // Hair in front: locks swept from the parting over the brow, falling before the shoulders.
+  const front = document.getElementById("hair-front");
+  add(front, "path", { d: "M82 94C80 66 94 50 106 50 121 50 132 64 129 92 124 79 117 71 109 69 101 68 93 72 88 80 85 85 83 89 82 94Z", fill: "url(#g-hair)", opacity: ".9" });
+  for (let i = 0; i < 9; i++) {
+    const c = flow(-1, 103 - rnd() * 4, 52 + rnd() * 2, 81 + rnd() * 5, 0.02 + rnd() * 0.08, rnd() * 6.3, (rnd() - 0.5) * 8);
+    add(front, "path", { d: lock(c, 2 + rnd() * 3, 7 + rnd() * 9), fill: paints[Math.floor(rnd() * paints.length)], opacity: (0.5 + rnd() * 0.3).toFixed(2) });
   }
-  // In front: hair swept over the left brow and falling before the shoulder.
-  for (let i = 0; i < 26; i++) {
-    const d = strand(-1, 103 - rnd() * 4, 53 + rnd() * 2, 81 + rnd() * 4, 0.02 + rnd() * 0.08);
-    add(front, "path", { d, class: inkFor(), "stroke-width": (0.3 + rnd() * 0.55).toFixed(2), opacity: (0.4 + rnd() * 0.5).toFixed(2) });
+  for (let i = 0; i < 4; i++) {
+    const j = () => (rnd() - 0.5) * 3;
+    add(front, "path", { d: lock([[106 + i, 52], [116 + j(), 58], [124 + j(), 68], [128 + j(), 82], [128 + j(), 92]], 3, 4), fill: "url(#g-hair)", opacity: ".55" });
   }
-  // On the right, strands sweep over the brow and tuck behind the ear.
-  for (let i = 0; i < 12; i++) {
-    const r = () => rnd() - 0.5;
-    add(front, "path", { d: smooth([[106 + i * 0.6, 53], [118 + r() * 3, 58], [126 + r() * 3, 70], [128 + r() * 2, 86]]), class: inkFor(), "stroke-width": (0.3 + rnd() * 0.5).toFixed(2), opacity: (0.4 + rnd() * 0.45).toFixed(2) });
+
+  // Fine strands for detail, then lilac light along the outer edges.
+  const strands = document.getElementById("hair-strands");
+  const strandInk = ["var(--p-hair-1)", "var(--p-hair-1)", "var(--p-hair-2)", "var(--p-hair-3)", "var(--p-hair-3)", "var(--p-lilac)"];
+  for (let i = 0; i < 46; i++) {
+    const r = rnd(), side = r < 0.42 ? -1 : r < 0.84 ? 1 : -1, inFront = r >= 0.84;
+    const s0 = rnd();
+    const c = inFront ? flow(-1, 103 - rnd() * 3, 52, 82 + rnd() * 4, 0.03 + rnd() * 0.07, rnd() * 6.3, (rnd() - 0.5) * 8, 10)
+      : flow(side, side < 0 ? 102 - 20 * s0 : 108 + 20 * s0, 50 + 22 * s0 * s0, side < 0 ? 68 + rnd() * 10 : 134 + rnd() * 10, rnd() * 0.18, rnd() * 6.3, (rnd() - 0.4) * 20, 10);
+    add(strands, "path", { d: smooth(c), fill: "none", stroke: strandInk[Math.floor(rnd() * strandInk.length)], "stroke-width": (0.25 + rnd() * 0.5).toFixed(2), opacity: (0.3 + rnd() * 0.4).toFixed(2), "stroke-linecap": "round" });
   }
-  // Hair swept from the centre parting down over each temple.
-  for (let i = 0; i < 22; i++) {
-    const k = rnd(), j = () => (rnd() - 0.5) * 2.5;
-    const left = i % 2 === 0;
-    const pts = left
-      ? [[104.5, 53 + k * 4], [97 + j(), 58 + k * 8], [89 + j(), 68 + k * 9], [84 + j(), 82 + k * 6], [83 + j(), 96]]
-      : [[105.5, 53 + k * 4], [113 + j(), 58 + k * 8], [121 + j(), 67 + k * 9], [126 + j(), 80 + k * 5], [127 + j(), 90]];
-    add(front, "path", { d: smooth(pts), class: inkFor(), "stroke-width": (0.3 + rnd() * 0.45).toFixed(2), opacity: (0.45 + rnd() * 0.45).toFixed(2) });
+  const rim = document.getElementById("hair-rim");
+  add(rim, "path", { d: smooth(flow(-1, 96, 50, 64, 0.2, 1.2, -6)), fill: "none", stroke: "var(--p-lilac)", "stroke-width": "1.6", opacity: ".55" });
+  add(rim, "path", { d: smooth(flow(1, 114, 50, 142, 0.2, 2.4, -6)), fill: "none", stroke: "var(--p-lilac)", "stroke-width": "1.6", opacity: ".55" });
+
+  // Stars and leaves in her hair, and a collar of leaves.
+  const star = (cx, cy, r) => `M${cx} ${cy - r}Q${cx} ${cy} ${cx + r} ${cy}Q${cx} ${cy} ${cx} ${cy + r}Q${cx} ${cy} ${cx - r} ${cy}Q${cx} ${cy} ${cx} ${cy - r}Z`;
+  const deco = document.getElementById("hair-deco");
+  [[70, 130, 4], [138, 152, 3.5], [58, 188, 3], [150, 204, 4], [80, 226, 2.5]].forEach(([x, y, r]) => {
+    add(deco, "path", { d: star(x, y, r + 2), fill: "var(--p-gold)", opacity: ".45", filter: "url(#soft)" });
+    add(deco, "path", { d: star(x, y, r), fill: "#fff1c4" });
+  });
+  [[88, 62, -30], [124, 62, 35], [68, 150, -60], [146, 126, 50]].forEach(([x, y, rot]) =>
+    add(deco, "ellipse", { cx: x, cy: y, rx: 5.5, ry: 2.2, transform: `rotate(${rot} ${x} ${y})`, fill: "var(--p-sage)", opacity: ".85" }));
+  const collar = document.getElementById("collar");
+  for (let i = 0; i <= 10; i++) {
+    const t = i / 10, x = 90 + 32 * t, y = 166 + 15 * Math.sin(Math.PI * t) - 1;
+    add(collar, "ellipse", { cx: x.toFixed(1), cy: y.toFixed(1), rx: 4.2, ry: 1.8, transform: `rotate(${(i % 2 ? 35 : -35) + (t - 0.5) * 50} ${x.toFixed(1)} ${y.toFixed(1)})`, fill: i % 3 ? "var(--p-sage)" : "var(--p-gold)", opacity: ".85" });
   }
-  // The parting.
-  add(front, "path", { d: "M105 52Q104 56 104 60", class: "p-soft", "stroke-width": ".6" });
-  // Stars and leaves woven into her hair.
-  const star = (cx, cy, rr) => `M${cx} ${cy - rr}Q${cx} ${cy} ${cx + rr} ${cy}Q${cx} ${cy} ${cx} ${cy + rr}Q${cx} ${cy} ${cx - rr} ${cy}Q${cx} ${cy} ${cx} ${cy - rr}Z`;
-  [[72, 128, 4], [138, 150, 3.5], [60, 186, 3], [150, 200, 4], [82, 222, 2.5]].forEach(([x, y, rr]) => add(deco, "path", { d: star(x, y, rr), class: "p-gold" }));
-  [[88, 64, -30], [124, 64, 35], [70, 148, -60], [144, 128, 50]].forEach(([x, y, rot]) => add(deco, "ellipse", { cx: x, cy: y, rx: 5, ry: 2, transform: `rotate(${rot} ${x} ${y})`, class: "p-leaf" }));
-  // Motes of light around the frame.
+  const sparkles = document.getElementById("sparkles");
   [[14, 60], [186, 48], [8, 170], [192, 190], [40, 12], [162, 238]].forEach(([x, y], i) => {
     const el = add(sparkles, "path", { d: star(x, y, 3 + (i % 2)), class: "sparkle" });
     el.style.animationDelay = `${i * 0.5}s`;
   });
+
+  // Dried lavender and wild roses, tied with twine, with loose petals on the table.
+  const fl = document.getElementById("flowers");
+  const fg = add(fl, "g", { filter: "url(#cl-wc)" });
+  const stems = [[[232, 212], [170, 150], [110, 92], [52, 30]], [[230, 214], [180, 158], [128, 120], [70, 82]], [[234, 210], [196, 140], [150, 82], [112, 22]], [[228, 216], [160, 176], [100, 150], [30, 128]]];
+  stems.forEach((st) => add(fg, "path", { d: smooth(st), fill: "none", stroke: "#6d7a4f", "stroke-width": "2", "stroke-linecap": "round" }));
+  stems.forEach((st, si) => {                     // lavender buds along the last part of each stem
+    const [a, b] = [st.at(-2), st.at(-1)];
+    for (let k = 0; k < 15; k++) {
+      const t = k / 14, x = b[0] + (a[0] - b[0]) * t * 0.95, y = b[1] + (a[1] - b[1]) * t * 0.95;
+      const ang = Math.atan2(a[1] - b[1], a[0] - b[0]) * 180 / Math.PI, sideOff = (k % 2 ? 1 : -1) * (3 - t * 1.5);
+      add(fg, "ellipse", { cx: (x + sideOff).toFixed(1), cy: (y - sideOff * 0.4).toFixed(1), rx: (4.4 - t * 1.2).toFixed(1), ry: (2.7 - t * 0.6).toFixed(1), transform: `rotate(${ang.toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})`, fill: k % 3 ? "var(--p-lavender)" : "#6b55a3", opacity: (0.75 + rnd() * 0.25).toFixed(2) });
+    }
+    if (si === 1) add(fg, "ellipse", { cx: 150, cy: 136, rx: 9, ry: 3.5, transform: "rotate(-40 150 136)", fill: "url(#cl-leaf)" });
+  });
+  [[132, 132, 21], [178, 104, 18], [92, 170, 15]].forEach(([cx, cy, r]) => {      // roses: spiralling petals
+    for (let k = 0; k < 9; k++) {
+      const a = k * 2.4, rr = r * (1 - k / 11);
+      add(fg, "ellipse", { cx: (cx + Math.cos(a) * rr * 0.35).toFixed(1), cy: (cy + Math.sin(a) * rr * 0.35).toFixed(1), rx: rr.toFixed(1), ry: (rr * 0.72).toFixed(1), transform: `rotate(${(a * 57).toFixed(0)} ${cx} ${cy})`, fill: "url(#cl-rose)", opacity: ".8", stroke: "#8d4553", "stroke-opacity": ".35", "stroke-width": ".6" });
+    }
+    add(fg, "ellipse", { cx: cx + r * 0.9, cy: cy + r * 0.6, rx: 10, ry: 4, transform: `rotate(30 ${cx + r * 0.9} ${cy + r * 0.6})`, fill: "url(#cl-leaf)" });
+  });
+  add(fg, "path", { d: "M214 196c8-6 18-2 14 6s-16 4-14-6Z M220 200c-6 8-14 12-22 10", fill: "none", stroke: "#a07a46", "stroke-width": "2" });
+  [[96, 196, 20], [64, 168, -30], [190, 60, 60], [40, 200, 10]].forEach(([x, y, rot]) =>
+    add(fl, "ellipse", { cx: x, cy: y, rx: 6, ry: 3.6, transform: `rotate(${rot} ${x} ${y})`, fill: "url(#cl-rose)", opacity: ".75" }));
+
+  // Barbs on the quill feather.
+  const quill = document.getElementById("quill");
+  for (let k = 0; k < 30; k++) {
+    const t = 0.08 + k * 0.028, x = 119 - (119 - 58) * t, y = 172 - (172 - 8) * t, len = 9 + 10 * Math.sin(Math.PI * Math.min(1, t * 1.3));
+    add(quill, "path", { d: `M${x.toFixed(1)} ${y.toFixed(1)}l${(-len * 0.8).toFixed(1)} ${(-len * 0.35).toFixed(1)}M${x.toFixed(1)} ${y.toFixed(1)}l${(len * 0.75).toFixed(1)} ${(len * 0.1).toFixed(1)}`, stroke: "#bdb3a2", "stroke-width": ".5", opacity: ".6" });
+  }
+
+  // The wax seal: one drawing, used twice so it can crack into two halves.
+  const art = document.getElementById("seal-art").content.querySelector(".seal-g");
+  document.querySelectorAll(".seal svg").forEach((svg) => svg.appendChild(art.cloneNode(true)));
 })();
 
 // ── Drifting motes in the room ──
@@ -1073,7 +1308,7 @@ function ask(text) {
     example: EXAMPLE,
     history,
     prefix: lore.prefix,
-    maxNewTokens: MAX_NEW_TOKENS,
+    maxNewTokens: MAX_NEW_TOKENS[device] || 96,
   });
 }
 
@@ -1111,15 +1346,16 @@ function setProgress(pct) {
 worker.onmessage = ({ data }) => {
   switch (data.type) {
     case "backend": {
+      device = data.device;
       const gpu = data.device === "webgpu";
       $("backend").textContent = gpu ? "Fast, on your graphics card" : "No WebGPU here: a lighter Libby, on your CPU";
       $("size").textContent = `about ${SIZES_MB[data.dtype]} MB`;
       if (data.fallback) $("phase").textContent = "Your graphics card couldn't hold her; trying your CPU instead…";
       else {
+        const mb = SIZES_MB[data.dtype];
         downloadBtn.disabled = false;
-        $("download-label").textContent = data.cached
-          ? "Wake Libby (already on this device)"
-          : `Download model (${SIZES_MB[data.dtype]} MB)`;
+        $("download-label").textContent = data.cached ? "Wake Libby (already on this device)" : `Download model · ${mb} MB`;
+        downloadBtn.setAttribute("aria-label", data.cached ? "Wake Libby (already on this device)" : `Download model (${mb} MB) and wake Libby`);
       }
       break;
     }
@@ -1138,7 +1374,7 @@ worker.onmessage = ({ data }) => {
       ready = true;
       $("note").hidden = true;
       $("progress").hidden = true;
-      $("download-label").textContent = "Libby is awake";
+      downloadBtn.hidden = true;
       $("backend").textContent = data.device === "webgpu" ? "Writing from your graphics card" : "Writing from your CPU";
       setBusy(false);
       input.placeholder = "Write to Libby upon the scroll…";
@@ -1168,6 +1404,8 @@ worker.onmessage = ({ data }) => {
       console.error(data.message);
       if (!ready) {
         $("phase").textContent = "Something went astray: " + data.message;
+        downloadBtn.classList.remove("broken");
+        downloadBtn.hidden = false;
         downloadBtn.disabled = false;
         $("download-label").textContent = "Try again";
       } else {
@@ -1181,14 +1419,22 @@ worker.onmessage = ({ data }) => {
 };
 
 downloadBtn.onclick = async () => {
+  // The seal cracks, the flap lifts, and the letter gives way to the ink-line progress.
   downloadBtn.disabled = true;
+  downloadBtn.classList.add("broken");
   $("download-label").textContent = "Breaking the seal…";
-  $("progress").hidden = false;
   $("phase").textContent = "Gathering pages…";
+  setTimeout(() => { if (!ready) { downloadBtn.hidden = true; $("progress").hidden = false; } }, reduceMotion ? 0 : 1300);
   // Ask the browser to keep the cached model rather than evicting it under storage pressure.
   try { await navigator.storage?.persist?.(); } catch {}
   worker.postMessage({ type: "load" });
 };
+
+// Libby's library: the gameofbooks database, copied into this folder.
+fetch("books/fantasy_novels.json")
+  .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+  .then(loadLibrary)
+  .catch((err) => console.error("Couldn't load Libby's library:", err));
 
 resetChat();
 setBusy(false);
